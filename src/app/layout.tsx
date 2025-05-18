@@ -1,3 +1,5 @@
+// src/app/layout.tsx
+import './globals.css';
 import type { ReactNode } from 'react';
 import { AppLogo } from '@/components/shared/app-logo';
 import { ShieldCheck } from 'lucide-react';
