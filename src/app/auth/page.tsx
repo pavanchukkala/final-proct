@@ -1,10 +1,26 @@
-"use client";
+'use client';
+
 export const dynamic = 'force-dynamic';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
 import { AuthPanel } from '@/components/auth/auth-panel';
 import { AppLogo } from '@/components/shared/app-logo';
 import { User, Briefcase } from 'lucide-react';
 
 export default function AuthPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // Redirect once authenticated
+  useEffect(() => {
+    if (user) {
+      const path = user.role === 'candidate' ? '/candidate/dashboard' : '/recruiter/dashboard';
+      router.push(path);
+    }
+  }, [user, router]);
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 animated-gradient-background">
       <div className="absolute top-6 left-6">
@@ -14,7 +30,7 @@ export default function AuthPage() {
         <AuthPanel
           role="candidate"
           title="Candidate Portal"
-          description="Access your interviews, exams, and mock tests."
+          description="Apply for internships, take assessments, and track your progress."
           icon={User}
         />
         <AuthPanel
