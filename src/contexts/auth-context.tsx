@@ -36,18 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (!loading) {
-      if (user && pathname === '/auth') {
-        router.push(`/${user.role}/dashboard`);
-      } else if (!user && pathname !== '/auth' && !pathname.startsWith('/_next/')) {
-        if (pathname !== '/') {
-          router.push('/auth');
-        }
-      }
-    }
-  }, [user, loading, pathname, router]);
-
   const login = (email: string, role: UserRole) => {
     const newUser: User = { 
       id: Date.now().toString(), 
