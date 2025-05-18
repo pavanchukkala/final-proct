@@ -1,8 +1,10 @@
+// src/app/auth/page.tsx
+
 'use client';
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { AuthPanel } from '@/components/auth/auth-panel';
@@ -10,17 +12,33 @@ import { AppLogo } from '@/components/shared/app-logo';
 import { User, Briefcase } from 'lucide-react';
 
 export default function AuthPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const [redirected, setRedirected] = useState(false);
   const router = useRouter();
 
-  // Redirect once authenticated
   useEffect(() => {
-    if (user) {
+    if (!loading && user && !redirected) {
+      setRedirected(true);
       const path = user.role === 'candidate' ? '/candidate/dashboard' : '/recruiter/dashboard';
-      router.push(path);
+      router.replace(path);
     }
-  }, [user, router]);
+  }, [user, loading, redirected, router]);
 
+  if (loading) {
+    // Show a loading indicator while auth state is resolving
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (user) {
+    // Avoid showing auth panels while redirecting
+    return null;
+  }
+
+  // User is not authenticated: show signup/login panels
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 animated-gradient-background">
       <div className="absolute top-6 left-6">
