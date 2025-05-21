@@ -1,70 +1,57 @@
-// src/components/auth/auth-panel.tsx
+// src/app/auth/page.tsx
 
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { AuthForm } from './auth-form';
-import type { UserRole } from '@/contexts/auth-context';
+import { AuthProvider } from '@/contexts/auth-context';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AuthPanel } from '@/components/auth/auth-panel';
+import { AppLogo } from '@/components/shared/app-logo';
 import { User, Briefcase } from 'lucide-react';
 
-interface AuthPanelProps {
-  role: UserRole;
-  title: string;
-  description: string;
-  icon: React.ElementType;
-}
+const roleConfig = {
+  candidate: {
+    title: 'Candidate Portal',
+    description: 'Apply for internships, take assessments, and track your progress.',
+    icon: User,
+  },
+  recruiter: {
+    title: 'Recruiter Portal',
+    description: 'Manage interviews, invite candidates, and analyze results.',
+    icon: Briefcase,
+  },
+};
 
-export function AuthPanel({ role, title, description, icon: Icon }: AuthPanelProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
+type Role = keyof typeof roleConfig;
+
+export default function AuthPage() {
+  const [role, setRole] = useState<Role>('candidate');
+
+  const { title, description, icon } = roleConfig[role];
 
   return (
-    <Card className="w-full max-w-md shadow-2xl bg-card/80 backdrop-blur-md border-border/50 transform transition-all duration-300 hover:scale-[1.01] hover:shadow-primary/20">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 p-3 bg-primary/20 rounded-full w-fit">
-          <Icon className="h-10 w-10 text-primary" />
+    <AuthProvider>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 animated-gradient-background">
+        <div className="absolute top-6 left-6">
+          <AppLogo size="lg" />
         </div>
-        <CardTitle className="text-3xl font-bold">{title}</CardTitle>
-        <CardDescription className="text-muted-foreground text-base">{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs
-          value={isSignUp ? 'signup' : 'signin'}
-          onValueChange={(value) => setIsSignUp(value === 'signup')}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin">
-            <AuthForm
-              role={role}
-              isSignUp={false}
-              onToggleMode={() => setIsSignUp(true)}
-            />
-          </TabsContent>
-          <TabsContent value="signup">
-            <AuthForm
-              role={role}
-              isSignUp={true}
-              onToggleMode={() => setIsSignUp(false)}
-            />
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+        <div className="w-full max-w-xl mb-8">
+          <Tabs value={role} onValueChange={setRole} className="w-full">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="candidate">Candidate</TabsTrigger>
+              <TabsTrigger value="recruiter">Recruiter</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        <AuthPanel role={role} title={title} description={description} icon={icon} />
+        <footer className="absolute bottom-6 text-center w-full">
+          <p className="text-sm text-foreground/70">
+            &copy; {new Date().getFullYear()} Proctoring System. All rights reserved.
+          </p>
+        </footer>
+      </div>
+    </AuthProvider>
   );
 }
