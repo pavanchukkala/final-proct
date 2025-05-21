@@ -1,8 +1,21 @@
-"use client";
+// src/components/auth/auth-panel.tsx
+
+'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { AuthForm } from './auth-form';
 import type { UserRole } from '@/contexts/auth-context';
 import { User, Briefcase } from 'lucide-react';
@@ -27,16 +40,28 @@ export function AuthPanel({ role, title, description, icon: Icon }: AuthPanelPro
         <CardDescription className="text-muted-foreground text-base">{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => setIsSignUp(value === 'signup')}>
+        <Tabs
+          value={isSignUp ? 'signup' : 'signin'}
+          onValueChange={(value) => setIsSignUp(value === 'signup')}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           <TabsContent value="signin">
-            <AuthForm role={role} isSignUp={false} onToggleMode={() => setIsSignUp(true)} />
+            <AuthForm
+              role={role}
+              isSignUp={false}
+              onToggleMode={() => setIsSignUp(true)}
+            />
           </TabsContent>
           <TabsContent value="signup">
-            <AuthForm role={role} isSignUp={true} onToggleMode={() => setIsSignUp(false)} />
+            <AuthForm
+              role={role}
+              isSignUp={true}
+              onToggleMode={() => setIsSignUp(false)}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
