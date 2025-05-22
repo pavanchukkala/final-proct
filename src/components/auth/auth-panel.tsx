@@ -1,3 +1,5 @@
+// src/components/auth/auth-panel.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -28,47 +30,43 @@ export function AuthPanel({ role, title, description, icon: Icon }: AuthPanelPro
   const [isSignUp, setIsSignUp] = useState(false);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-4 py-10 sm:px-6 lg:px-8 bg-background">
-      <Card className="w-full max-w-md shadow-2xl bg-card/80 backdrop-blur-md border border-border/30 rounded-2xl transition-transform duration-300 hover:scale-[1.01] hover:shadow-primary/30">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto p-4 bg-primary/15 rounded-full w-fit">
-            <Icon className="h-10 w-10 text-primary" />
-          </div>
-          <CardTitle className="text-3xl font-bold text-foreground">
-            {title}
-          </CardTitle>
-          <CardDescription className="text-muted-foreground text-base px-2">
-            {description}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs
-            value={isSignUp ? 'signup' : 'signin'}
-            onValueChange={(value) => setIsSignUp(value === 'signup')}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted/40 rounded-md overflow-hidden">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin">
-              <AuthForm
-                role={role}
-                isSignUp={false}
-                onToggleMode={() => setIsSignUp(true)}
-              />
-            </TabsContent>
-            <TabsContent value="signup">
-              <AuthForm
-                role={role}
-                isSignUp={true}
-                onToggleMode={() => setIsSignUp(false)}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="w-full max-w-md shadow-lg bg-card/80 backdrop-blur-sm border border-border/20 rounded-xl">
+      <CardHeader className="text-center pt-6 pb-2 space-y-2">
+        <div className="mx-auto p-3 bg-primary/20 rounded-full w-fit">
+          <Icon className="h-8 w-8 text-primary" />
+        </div>
+        <CardTitle className="text-2xl font-semibold text-foreground">
+          {title}
+        </CardTitle>
+        <CardDescription className="text-muted-foreground px-4">
+          {description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="px-6 pb-8">
+        <Tabs
+          value={isSignUp ? 'signup' : 'signin'}
+          onValueChange={(value) => setIsSignUp(value === 'signup')}
+        >
+          <TabsList className="grid grid-cols-2 mb-4 bg-muted/30 rounded-md">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin">
+            <AuthForm
+              role={role}
+              isSignUp={false}
+              onToggleMode={() => setIsSignUp(true)}
+            />
+          </TabsContent>
+          <TabsContent value="signup">
+            <AuthForm
+              role={role}
+              isSignUp={true}
+              onToggleMode={() => setIsSignUp(false)}
+            />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }
