@@ -18,7 +18,8 @@ export default function AuthPage() {
         </div>
 
         {/* Two panels side by side on md+, stacked on sm */}
-        <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8">
+       <div className="w-full max-w-5xl flex flex-wrap justify-center items-start gap-10">
+
           <AuthPanel
             role="candidate"
             title="Candidate Portal"
