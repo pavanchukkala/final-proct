@@ -1,158 +1,101 @@
 // File: src/app/(app)/interview-session/[sessionId]/page.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
-import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Tooltip } from '@/components/ui/tooltip';
-import type { LiveInterviewSessionData, TestQuestion } from '@/types';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { RealtimeInterviewUI } from "@/components/interview/realtime-interview-ui";
+import type { LiveInterviewSessionData, TestQuestion } from "@/types";
+import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
-// -----------------------------------------------------------------------------
-// Custom Error Boundary
-// -----------------------------------------------------------------------------
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error: Error) { console.error('ErrorBoundary caught:', error); }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <Alert variant="destructive" className="w-full">
-            <AlertCircle className="h-6 w-6" />
-            <AlertTitle>Unable to load interview UI</AlertTitle>
-            <AlertDescription>
-              Please refresh the page or contact support if the issue persists.
-            </AlertDescription>
-          </Alert>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
-// Dynamically load the heavy real-time component
-const RealtimeInterviewUI = dynamic(
-  () => import('@/components/interview/realtime-interview-ui'),
-  {
-    ssr: false,
-    suspense: true,
-  }
-);
-
-// -----------------------------------------------------------------------------
-// Mock Interview Sessions
-// In production, replace this mock with API integration
-// -----------------------------------------------------------------------------
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
-  /* existing mock data unchanged */
+  // ... (your original 3 sessions here)
 };
 
-// -----------------------------------------------------------------------------
-// LiveInterviewPage Component
-// Wraps the RealtimeInterviewUI in Suspense and ErrorBoundary to catch client errors
-// -----------------------------------------------------------------------------
 export default function LiveInterviewPage() {
-  const params = useParams();
-  const sessionId = typeof params.sessionId === 'string' ? params.sessionId : 'default_live_interview';
+  const { sessionId: rawId } = useParams() ?? {};
+  const sessionId = typeof rawId === "string" ? rawId : "default_live_interview";
 
-  // Local state
-  const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
+  const [data, setData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const isMounted = useRef(true);
 
-  // Fetch session (mock)
-  const fetchSession = useCallback(() => {
+  useEffect(() => {
     setLoading(true);
-    setError(null);
     setTimeout(() => {
       if (!isMounted.current) return;
-      const data = mockLiveInterviewSessions[sessionId] || mockLiveInterviewSessions['default_live_interview'];
-      if (data) setSessionData(data);
-      else setError('Interview session not found.');
+      const fetched = mockLiveInterviewSessions[sessionId] ?? mockLiveInterviewSessions.default_live_interview;
+      if (fetched) {
+        setData(fetched);
+        setError(null);
+      } else {
+        setError("Session not found. Please check the link.");
+      }
       setLoading(false);
-    }, 500);
-  }, [sessionId]);
+    }, 700);
 
-  useEffect(() => {
-    fetchSession();
-    return () => { isMounted.current = false; };
-  }, [fetchSession]);
+    return () => {
+      isMounted.current = false;
+    };
+  }, [sessionId]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background px-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        <p className="sr-only">Loading...</p>
       </div>
     );
   }
 
-  if (error || !sessionData) {
+  if (error || !data) {
     return (
-      <div className="flex items-center justify-center h-screen p-4">
-        <Alert variant="destructive" className="max-w-md w-full">
+      <div className="flex items-center justify-center h-screen bg-background p-4">
+        <Alert variant="destructive" className="w-full max-w-md">
           <AlertCircle className="h-6 w-6" />
-          <AlertTitle>Error Loading Session</AlertTitle>
+          <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  // Derived values
-  const questions = sessionData.questions;
-  const total = questions.length;
-  const current = questions[currentIndex];
-  const progressValue = useMemo(() => ((currentIndex + 1) / total) * 100, [currentIndex, total]);
-
-  // Handlers
-  const nextQuestion = () => { if (currentIndex < total - 1) setCurrentIndex(i => i + 1); };
-  const prevQuestion = () => { if (currentIndex > 0) setCurrentIndex(i => i - 1); };
-  const elapsed = Math.floor((Date.now() - (sessionData.startTimestamp || Date.now())) / 60000);
-  const timeLeft = sessionData.durationMinutes - elapsed;
-
+  // Responsive container: full-width on mobile, centered max‐width on md+
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground select-none">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b">
+    <div className="flex flex-col h-screen bg-background text-foreground">
+      {/* HEADER */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b">
         <div>
-          <h1 className="text-2xl font-bold">{sessionData.title}</h1>
-          <p className="text-sm text-muted-foreground">Interviewer: {sessionData.interviewerName}</p>
+          <h1 className="text-xl sm:text-2xl font-semibold">{data.title}</h1>
+          <p className="text-sm text-muted-foreground">Interviewer: {data.interviewerName}</p>
         </div>
       </header>
 
-      {/* Progress */}
-      <section className="px-4 py-2">
-        <Progress value={progressValue} className="h-2 rounded-full" />
-        <p className="text-xs text-muted-foreground mt-1">
-          Question {currentIndex + 1} of {total}
-        </p>
-      </section>
-
-      {/* Question & UI Container */}
-      <main className="flex-1 overflow-auto p-4">
-        <ErrorBoundary>
-          <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin text-primary m-auto" />}>
-            <RealtimeInterviewUI interviewSession={sessionData} question={current} />
-          </Suspense>
-        </ErrorBoundary>
+      {/* MAIN CONTENT */}
+      <main className="flex-1 overflow-auto px-4 py-3">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {data.questions.map((q: TestQuestion, idx) => (
+            <div
+              key={q.id}
+              className={`p-4 border rounded-lg bg-card ${
+                idx === 0 ? "" : "mt-4"
+              }`}
+            >
+              <h2 className="text-lg font-medium">{q.text}</h2>
+              {q.prompt && <p className="mt-1 text-sm text-muted-foreground">{q.prompt}</p>}
+              <div className="mt-3">
+                <RealtimeInterviewUI interviewSession={data} question={q} />
+              </div>
+            </div>
+          ))}
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="flex items-center justify-between p-4 border-t">
-        <Button onClick={prevQuestion} disabled={currentIndex === 0} variant="outline">Previous</Button>
-        <div className="text-sm text-muted-foreground">
-          Time left: {timeLeft > 0 ? `${timeLeft} min` : '00:00'}
-        </div>
-        <Button onClick={nextQuestion} disabled={currentIndex === total - 1}>Next</Button>
+      {/* FOOTER */}
+      <footer className="px-4 py-3 border-t text-center text-xs text-muted-foreground">
+        Duration: {data.durationMinutes} min &nbsp;|&nbsp; Candidate: {data.candidateName}
       </footer>
     </div>
   );
