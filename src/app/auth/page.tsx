@@ -22,7 +22,6 @@ const roleConfig = {
     icon: Briefcase,
   },
 } as const;
-
 type Role = keyof typeof roleConfig;
 
 export default function AuthPage() {
@@ -31,40 +30,48 @@ export default function AuthPage() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 px-4">
-        <div className="relative w-full max-w-md">
-          {/* Centered logo */}
-          <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
+      <div
+        className="
+          min-h-screen
+          flex
+          items-center
+          justify-center
+          bg-gradient-to-br from-primary/10 to-secondary/10
+          px-4
+        "
+      >
+        {/* Centered Column */}
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
             <AppLogo size="lg" />
           </div>
 
-          {/* Panel container with padding to push it below logo */}
-          <div className="pt-16 bg-background/60 backdrop-blur-sm rounded-2xl shadow-lg">
-            <div className="px-6 py-8">
-              {/* Role tabs */}
-              <Tabs value={role} onValueChange={setRole} className="mb-6">
-                <TabsList className="grid grid-cols-2 bg-muted/30 rounded-full p-1">
-                  {(['candidate', 'recruiter'] as Role[]).map(r => (
-                    <TabsTrigger
-                      key={r}
-                      value={r}
-                      className="data-[state=active]:bg-background data-[state=active]:shadow-inner"
-                    >
-                      {r === 'candidate' ? 'Candidate' : 'Recruiter'}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
+          {/* Role Tabs */}
+          <Tabs value={role} onValueChange={setRole} className="mb-6">
+            <TabsList className="grid grid-cols-2 gap-1 bg-muted/20 rounded-md p-1">
+              <TabsTrigger
+                value="candidate"
+                className="data-[state=active]:bg-background data-[state=active]:shadow"
+              >
+                Candidate
+              </TabsTrigger>
+              <TabsTrigger
+                value="recruiter"
+                className="data-[state=active]:bg-background data-[state=active]:shadow"
+              >
+                Recruiter
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-              {/* Auth form panel */}
-              <AuthPanel
-                role={role}
-                title={title}
-                description={description}
-                icon={icon}
-              />
-            </div>
-          </div>
+          {/* Your existing panel, untouched */}
+          <AuthPanel
+            role={role}
+            title={title}
+            description={description}
+            icon={icon}
+          />
 
           {/* Footer */}
           <footer className="mt-8 text-center text-sm text-foreground/70">
