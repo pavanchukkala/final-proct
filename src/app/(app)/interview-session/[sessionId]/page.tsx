@@ -5,14 +5,11 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
-import { useTheme } from 'next-themes';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 
 // Dynamically load the heavy real-time component
@@ -70,14 +67,11 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
 
 // -----------------------------------------------------------------------------
 // LiveInterviewPage Component
-// Manages loading, error, progress, UI transitions, and controls only
+// Clean, dependency-light version without external animation or theme libs
 // -----------------------------------------------------------------------------
 export default function LiveInterviewPage() {
   const params = useParams();
   const sessionId = typeof params.sessionId === 'string' ? params.sessionId : 'default_live_interview';
-
-  // Theme management
-  const { theme, setTheme } = useTheme();
 
   // Local state
   const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
@@ -104,7 +98,7 @@ export default function LiveInterviewPage() {
     return () => { isMounted.current = false; };
   }, [fetchSession]);
 
-  // Handle loading state
+  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -113,7 +107,7 @@ export default function LiveInterviewPage() {
     );
   }
 
-  // Handle error state
+  // Error state
   if (error || !sessionData) {
     return (
       <div className="flex items-center justify-center h-screen p-4">
@@ -155,12 +149,6 @@ export default function LiveInterviewPage() {
           <h1 className="text-2xl font-bold">{sessionData.title}</h1>
           <p className="text-sm text-muted-foreground">Interviewer: {sessionData.interviewerName}</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Tooltip content="Toggle Dark/Light Mode">
-            <Switch checked={theme === 'dark'} onCheckedChange={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
-          </Tooltip>
-          <Button size="sm" variant="ghost" onClick={() => setCurrentIndex(0)}>Restart</Button>
-        </div>
       </header>
 
       {/* Progress */}
@@ -169,33 +157,26 @@ export default function LiveInterviewPage() {
         <p className="text-xs text-muted-foreground mt-1">Question {currentIndex + 1} of {total}</p>
       </section>
 
-      {/* Animated Question & UI */}
+      {/* Question & UI */}
       <main className={contentClasses}>
-        <AnimatePresence exitBeforeEnter>
-          <motion.div
-            key={current.id}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            <div>
-              <h2 className="text-xl font-medium">{current.text}</h2>
-              {current.prompt && <p className="text-sm text-muted-foreground">{current.prompt}</p>}
-            </div>
-            <div className="border rounded-lg p-4 bg-card h-96 overflow-auto">
-              <RealtimeInterviewUI interviewSession={sessionData} question={current} />
-            </div>
-          </motion.div>
-        </AnimatePresence>
+        <div className="space-y-6 transition-all ease-in-out duration-300">
+          <div>
+            <h2 className="text-xl font-medium">{current.text}</h2>
+            {current.prompt && <p className="text-sm text-muted-foreground">{current.prompt}</p>}
+          </div>
+          <div className="border rounded-lg p-4 bg-card h-96 overflow-auto">
+            <RealtimeInterviewUI interviewSession={sessionData} question={current} />
+          </div>
+        </div>
       </main>
 
       {/* Footer */}
       <footer className={footerClasses}>
-        <Button onClick={prevQuestion} disabled={currentIndex === 0} variant="outline">Previous</Button>
+        <div className="flex items-center space-x-2">
+          <Button onClick={prevQuestion} disabled={currentIndex === 0} variant="outline">Previous</Button>
+          <Button onClick={nextQuestion} disabled={currentIndex === total - 1}>Next</Button>
+        </div>
         <div className="text-sm text-muted-foreground">Time left: {timeLeft > 0 ? `${timeLeft} min` : '00:00'}</div>
-        <Button onClick={nextQuestion} disabled={currentIndex === total - 1}>Next</Button>
       </footer>
     </div>
   );
