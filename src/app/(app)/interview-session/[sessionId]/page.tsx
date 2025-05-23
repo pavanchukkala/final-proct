@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { ErrorBoundary } from 'react-error-boundary';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -12,6 +11,31 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip } from '@/components/ui/tooltip';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
+
+// -----------------------------------------------------------------------------
+// Custom Error Boundary
+// -----------------------------------------------------------------------------
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: Error) { console.error('ErrorBoundary caught:', error); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <Alert variant="destructive" className="w-full">
+            <AlertCircle className="h-6 w-6" />
+            <AlertTitle>Unable to load interview UI</AlertTitle>
+            <AlertDescription>
+              Please refresh the page or contact support if the issue persists.
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Dynamically load the heavy real-time component
 const RealtimeInterviewUI = dynamic(
@@ -23,24 +47,8 @@ const RealtimeInterviewUI = dynamic(
 );
 
 // -----------------------------------------------------------------------------
-// Error fallback for the interview UI component
-// -----------------------------------------------------------------------------
-function InterviewUIFallback() {
-  return (
-    <div className="flex items-center justify-center h-full">
-      <Alert variant="destructive" className="w-full">
-        <AlertCircle className="h-6 w-6" />
-        <AlertTitle>Unable to load interview UI</AlertTitle>
-        <AlertDescription>
-          Please refresh the page or contact support if the issue persists.
-        </AlertDescription>
-      </Alert>
-    </div>
-  );
-}
-
-// -----------------------------------------------------------------------------
 // Mock Interview Sessions
+// In production, replace this mock with API integration
 // -----------------------------------------------------------------------------
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
   /* existing mock data unchanged */
@@ -131,7 +139,7 @@ export default function LiveInterviewPage() {
 
       {/* Question & UI Container */}
       <main className="flex-1 overflow-auto p-4">
-        <ErrorBoundary FallbackComponent={InterviewUIFallback}>
+        <ErrorBoundary>
           <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin text-primary m-auto" />}>
             <RealtimeInterviewUI interviewSession={sessionData} question={current} />
           </Suspense>
