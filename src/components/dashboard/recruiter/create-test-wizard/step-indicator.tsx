@@ -1,84 +1,70 @@
-// src/components/dashboard/recruiter/create-test-wizard/step-indicator.tsx
-
 'use client';
 
-import { Check, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StepIndicatorProps {
   currentStep: number;
   steps: string[];
 }
 
-/**
- * A visually appealing, animated step indicator with enhanced professional styling.
- */
 export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
   return (
-    <TooltipProvider>
-      <nav aria-label="Progress" className="w-full">
-        <ol className="relative flex justify-between items-center w-full">
-          {/* Progress bar */}
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-muted-foreground/20 transform -translate-y-1/2 rounded-full" />
-          <div
-            className="absolute top-1/2 left-0 h-1 bg-primary rounded-full transition-all duration-700 ease-in-out"
-            style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-          />
+    <nav aria-label="Progress" className="w-full">
+      <ol className="relative flex items-center justify-between w-full overflow-x-auto px-2 sm:px-4 md:px-6">
+        {/* Connector line */}
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full h-[2px] bg-gradient-to-r from-primary/60 to-secondary/50 blur-sm" />
+        </div>
 
-          {steps.map((stepName, idx) => {
-            const status =
-              idx < currentStep
-                ? 'completed'
-                : idx === currentStep
-                ? 'current'
-                : 'upcoming';
+        {steps.map((stepName, idx) => {
+          const status =
+            idx < currentStep
+              ? 'completed'
+              : idx === currentStep
+              ? 'current'
+              : 'upcoming';
 
-            const ringColors = {
-              completed: 'ring-primary',
-              current: 'ring-ring ring-2 animate-pulse',
-              upcoming: 'ring-border',
-            };
+          const baseDotStyle =
+            'h-10 w-10 flex items-center justify-center rounded-full border-2 transition-all duration-300 shadow-lg backdrop-blur-md';
+          const statusStyles = {
+            completed: 'bg-primary text-white border-primary shadow-primary/30',
+            current:
+              'bg-background text-primary border-primary ring-2 ring-primary/50',
+            upcoming: 'bg-muted text-muted-foreground border-border',
+          };
 
-            const nodeStyles = {
-              completed: 'bg-primary text-primary-foreground',
-              current: 'bg-background text-primary border-2 border-primary',
-              upcoming: 'bg-background text-muted-foreground border-2 border-border',
-            };
+          return (
+            <li key={stepName} className="relative flex flex-col items-center flex-1">
+              <div
+                className={cn(baseDotStyle, statusStyles[status])}
+                aria-current={status === 'current' ? 'step' : undefined}
+                title={stepName}
+              >
+                {status === 'completed' ? (
+                  <Check className="h-5 w-5" />
+                ) : status === 'current' ? (
+                  <div className="h-3 w-3 rounded-full bg-primary" />
+                ) : null}
+              </div>
 
-            return (
-              <li key={stepName} className="relative z-10 flex flex-col items-center w-1/3 text-center">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={`flex items-center justify-center w-12 h-12 rounded-full shadow-md ${nodeStyles[status]} ${ringColors[status]} transition-all duration-300`}
-                    >
-                      {status === 'completed' ? (
-                        <Check className="h-5 w-5" />
-                      ) : (
-                        <span className="text-base font-semibold">{idx + 1}</span>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-sm font-medium">{stepName}</p>
-                  </TooltipContent>
-                </Tooltip>
-                <span
-                  className={`mt-2 text-xs sm:text-sm font-medium transition-colors ${
-                    status === 'completed'
-                      ? 'text-primary'
-                      : status === 'current'
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {stepName}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
-    </TooltipProvider>
+              {/* Label */}
+              <p
+                className={cn(
+                  'mt-2 text-center text-xs sm:text-sm max-w-[80px] truncate',
+                  {
+                    'text-primary font-semibold': status === 'current',
+                    'text-muted-foreground': status === 'upcoming',
+                    'text-primary': status === 'completed',
+                  }
+                )}
+              >
+                {stepName}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }
