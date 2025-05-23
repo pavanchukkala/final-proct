@@ -11,7 +11,7 @@ import { User, Briefcase } from 'lucide-react';
 export default function AuthPage() {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+ <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 -mx-4 sm:-mx-6 lg:-mx-8">
         {/* Logo at top */}
         <div className="mb-8">
           <AppLogo size="lg" />
