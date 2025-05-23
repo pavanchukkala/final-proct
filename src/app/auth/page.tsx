@@ -11,14 +11,14 @@ import { User, Briefcase } from 'lucide-react';
 export default function AuthPage() {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
         {/* Logo at top */}
         <div className="mb-8">
           <AppLogo size="lg" />
         </div>
 
         {/* Two panels side by side on md+, stacked on sm */}
-        <div className="w-full max-w-4xl flex flex-col md:flex-row items-center justify-center gap-8">
+        <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8">
           <AuthPanel
             role="candidate"
             title="Candidate Portal"
