@@ -10,15 +10,15 @@ interface StepIndicatorProps {
 }
 
 /**
- * A sleek, modern step indicator with improved UI for production readiness.
+ * A sleek, professional horizontal step indicator with better spacing and clarity.
  */
 export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
   return (
-    <nav aria-label="Progress">
-      <ol className="relative flex items-center justify-between w-full px-2 sm:px-4 lg:px-6">
-        {/* Connector line */}
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full h-0.5 bg-border" />
+    <nav aria-label="Progress" className="w-full">
+      <ol className="relative flex items-center justify-between w-full px-2 sm:px-6">
+        {/* Connector Line */}
+        <div className="absolute inset-0 flex items-center justify-between" aria-hidden="true">
+          <div className="w-full h-1 bg-muted rounded-full" />
         </div>
 
         {steps.map((stepName, idx) => {
@@ -30,25 +30,25 @@ export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
               : 'upcoming';
 
           const markerClasses = {
-            completed: 'bg-primary border-primary text-white',
-            current: 'bg-background border-primary text-primary shadow-md',
-            upcoming: 'bg-background border-border text-muted-foreground hover:border-muted',
+            completed: 'bg-primary border-primary text-white shadow-sm',
+            current: 'bg-background border-4 border-primary shadow-md',
+            upcoming: 'bg-background border-2 border-border text-muted-foreground',
           };
 
           const labelClasses = {
-            completed: 'text-primary font-medium',
-            current: 'text-primary font-semibold',
+            completed: 'text-primary font-semibold',
+            current: 'text-primary font-bold',
             upcoming: 'text-muted-foreground font-medium',
           };
 
           return (
             <li
               key={stepName}
-              className="relative flex flex-col items-center flex-1 group"
+              className="relative z-10 flex flex-col items-center flex-1 text-center space-y-2"
             >
               {/* Marker */}
               <div
-                className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${markerClasses[status]}`}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${markerClasses[status]}`}
                 aria-current={status === 'current' ? 'step' : undefined}
               >
                 {status === 'completed' ? (
@@ -59,7 +59,7 @@ export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
               </div>
 
               {/* Label */}
-              <p className={`mt-3 text-center text-xs sm:text-sm ${labelClasses[status]}`}>{stepName}</p>
+              <span className={`text-sm sm:text-base ${labelClasses[status]}`}>{stepName}</span>
             </li>
           );
         })}
