@@ -35,11 +35,6 @@ export default function AuthPage() {
             />
           </Link>
         </div>
-        <footer className="absolute bottom-6 text-center w-full">
-          <p className="text-sm text-foreground/70">
-            &copy; {new Date().getFullYear()} Proctoring System. All rights reserved.
-          </p>
-        </footer>
       </div>
     </AuthProvider>
   );
