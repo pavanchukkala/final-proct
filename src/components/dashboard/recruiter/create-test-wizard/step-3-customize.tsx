@@ -245,7 +245,7 @@ export function Step3Customize({
             </CardHeader>
             <CardContent>
                 <div className="p-4 border rounded-lg bg-muted/50 min-h-[100px] text-sm text-muted-foreground">
-                    <p>Candidate view preview will appear here, showing shuffled/customized flow. (UI coming soon)</p>
+                    <p>Candidate view preview will appear here, showing shuffled/customized flow. </p>
                     {testData.shuffleQuestionsGlobal && <p className="mt-2 text-xs text-primary">Global shuffle is ON.</p>}
                     {sections.map(s => (
                         <div key={s.id} className="mt-1 text-xs">
