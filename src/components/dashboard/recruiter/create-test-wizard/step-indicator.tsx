@@ -2,7 +2,8 @@
 
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -10,60 +11,74 @@ interface StepIndicatorProps {
 }
 
 /**
- * A sleek, professional horizontal step indicator with better spacing and clarity.
+ * A visually appealing, animated step indicator with enhanced professional styling.
  */
 export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
   return (
-    <nav aria-label="Progress" className="w-full">
-      <ol className="relative flex items-center justify-between w-full px-2 sm:px-6">
-        {/* Connector Line */}
-        <div className="absolute inset-0 flex items-center justify-between" aria-hidden="true">
-          <div className="w-full h-1 bg-muted rounded-full" />
-        </div>
+    <TooltipProvider>
+      <nav aria-label="Progress" className="w-full">
+        <ol className="relative flex justify-between items-center w-full">
+          {/* Progress bar */}
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-muted-foreground/20 transform -translate-y-1/2 rounded-full" />
+          <div
+            className="absolute top-1/2 left-0 h-1 bg-primary rounded-full transition-all duration-700 ease-in-out"
+            style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+          />
 
-        {steps.map((stepName, idx) => {
-          const status =
-            idx < currentStep
-              ? 'completed'
-              : idx === currentStep
-              ? 'current'
-              : 'upcoming';
+          {steps.map((stepName, idx) => {
+            const status =
+              idx < currentStep
+                ? 'completed'
+                : idx === currentStep
+                ? 'current'
+                : 'upcoming';
 
-          const markerClasses = {
-            completed: 'bg-primary border-primary text-white shadow-sm',
-            current: 'bg-background border-4 border-primary shadow-md',
-            upcoming: 'bg-background border-2 border-border text-muted-foreground',
-          };
+            const ringColors = {
+              completed: 'ring-primary',
+              current: 'ring-ring ring-2 animate-pulse',
+              upcoming: 'ring-border',
+            };
 
-          const labelClasses = {
-            completed: 'text-primary font-semibold',
-            current: 'text-primary font-bold',
-            upcoming: 'text-muted-foreground font-medium',
-          };
+            const nodeStyles = {
+              completed: 'bg-primary text-primary-foreground',
+              current: 'bg-background text-primary border-2 border-primary',
+              upcoming: 'bg-background text-muted-foreground border-2 border-border',
+            };
 
-          return (
-            <li
-              key={stepName}
-              className="relative z-10 flex flex-col items-center flex-1 text-center space-y-2"
-            >
-              {/* Marker */}
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${markerClasses[status]}`}
-                aria-current={status === 'current' ? 'step' : undefined}
-              >
-                {status === 'completed' ? (
-                  <Check className="h-5 w-5" />
-                ) : status === 'current' ? (
-                  <div className="h-3 w-3 rounded-full bg-primary" />
-                ) : null}
-              </div>
-
-              {/* Label */}
-              <span className={`text-sm sm:text-base ${labelClasses[status]}`}>{stepName}</span>
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
+            return (
+              <li key={stepName} className="relative z-10 flex flex-col items-center w-1/3 text-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`flex items-center justify-center w-12 h-12 rounded-full shadow-md ${nodeStyles[status]} ${ringColors[status]} transition-all duration-300`}
+                    >
+                      {status === 'completed' ? (
+                        <Check className="h-5 w-5" />
+                      ) : (
+                        <span className="text-base font-semibold">{idx + 1}</span>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm font-medium">{stepName}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <span
+                  className={`mt-2 text-xs sm:text-sm font-medium transition-colors ${
+                    status === 'completed'
+                      ? 'text-primary'
+                      : status === 'current'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {stepName}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+    </TooltipProvider>
   );
 }
