@@ -9,61 +9,63 @@ interface StepIndicatorProps {
   steps: string[];
 }
 
+/**
+ * A clean, professional horizontal step indicator.
+ */
 export function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
   return (
-    <nav aria-label="Progress" className="w-full">
-      <ol role="list" className="flex justify-between items-center">
-        {steps.map((stepName, stepIdx) => (
-          <li key={stepName} className="relative flex flex-col items-center flex-1">
-            {/* Connector line (except first) */}
-            {stepIdx > 0 && (
-              <span
-                className={`absolute left-0 top-1/2 w-full h-px bg-${
-                  stepIdx <= currentStep ? 'primary' : 'border'
-                } transform -translate-y-1/2`}
-                aria-hidden="true"
-              />
-            )}
+    <nav aria-label="Progress">
+      <ol className="relative flex items-center justify-between w-full">        
+        {/* Connector line */}
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full h-px bg-border" />
+        </div>
 
-            {/* Marker */}
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full border-2 mb-2
-                ${
-                  stepIdx < currentStep
-                    ? 'border-primary bg-primary'
-                    : stepIdx === currentStep
-                    ? 'border-primary bg-background'
-                    : 'border-border bg-background'
-                }
-              `}
-              aria-current={stepIdx === currentStep ? 'step' : undefined}
+        {steps.map((stepName, idx) => {
+          const status =
+            idx < currentStep
+              ? 'completed'
+              : idx === currentStep
+              ? 'current'
+              : 'upcoming';
+
+          const markerClasses = {
+            completed: 'bg-primary border-primary',
+            current: 'bg-white border-primary',
+            upcoming: 'bg-background border-border',
+          };
+
+          const labelClasses = {
+            completed: 'text-primary font-medium',
+            current: 'text-primary font-semibold',
+            upcoming: 'text-muted-foreground font-medium',
+          };
+
+          return (
+            <li
+              key={stepName}
+              className="relative flex flex-col items-center flex-1"
             >
-              {stepIdx < currentStep ? (
-                <Check className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
-              ) : (
-                <span
-                  className={`block h-2 w-2 rounded-full
-                    ${stepIdx === currentStep ? 'bg-primary' : 'bg-transparent'}
-                  `}
-                  aria-hidden="true"
-                />
-              )}
-            </div>
+              {/* Marker */}
+              <div
+                className={
+                  `relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ` +
+                  markerClasses[status]
+                }
+                aria-current={status === 'current' ? 'step' : undefined}
+              >
+                {status === 'completed' ? (
+                  <Check className="h-5 w-5 text-primary-foreground" />
+                ) : status === 'current' ? (
+                  <div className="h-4 w-4 rounded-full bg-primary" />
+                ) : null}
+              </div>
 
-            {/* Label */}
-            <p className={`text-center text-sm w-16 break-words
-              ${
-                stepIdx < currentStep
-                  ? 'font-medium text-primary'
-                  : stepIdx === currentStep
-                  ? 'font-semibold text-primary'
-                  : 'font-medium text-muted-foreground'
-              }
-            `}>
-              {stepName}
-            </p>
-          </li>
-        ))}
+              {/* Label */}
+              <p className={`mt-2 text-center text-sm ${labelClasses[status]}`}>{stepName}</p>
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );
