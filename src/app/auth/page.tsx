@@ -3,62 +3,40 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
 import { AuthPanel } from '@/components/auth/auth-panel';
 import { AppLogo } from '@/components/shared/app-logo';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Briefcase } from 'lucide-react';
 
-const roleConfig = {
-  candidate: { title: 'Candidate Portal', description: 'Apply for internships, take assessments, and track your progress.', icon: User },
-  recruiter: { title: 'Recruiter Portal', description: 'Manage interviews, invite candidates, and analyze results.', icon: Briefcase },
-} as const;
-
-type Role = keyof typeof roleConfig;
-
 export default function AuthPage() {
-  const [role, setRole] = useState<Role>('candidate');
-  const { title, description, icon } = roleConfig[role];
-
   return (
     <AuthProvider>
-      <div
-        className="
-          min-h-screen
-          flex
-          items-center
-          justify-center
-          bg-gradient-to-br from-primary/10 to-secondary/10
-          px-4
-        "
-      >
-        <div className="w-full max-w-md">
-          {/* Centered logo */}
-          <div className="flex justify-center mb-6">
-            <AppLogo size="lg" />
-          </div>
-
-          {/* Role selection tabs */}
-          <Tabs value={role} onValueChange={setRole} className="mb-6">
-            <TabsList className="grid grid-cols-2 gap-1 rounded-md border bg-muted/20 p-1">
-              <TabsTrigger value="candidate" className="data-[state=active]:bg-background">
-                Candidate
-              </TabsTrigger>
-              <TabsTrigger value="recruiter" className="data-[state=active]:bg-background">
-                Recruiter
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Your original AuthPanel, untouched */}
-          <AuthPanel role={role} title={title} description={description} icon={icon} />
-
-          {/* Footer */}
-          <footer className="mt-8 text-center text-sm text-foreground/70">
-            &copy; {new Date().getFullYear()} Proctoring System. All rights reserved.
-          </footer>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 px-4">
+        {/* Logo at top */}
+        <div className="mb-8">
+          <AppLogo size="lg" />
         </div>
+
+        {/* Two panels side by side on md+, stacked on sm */}
+        <div className="w-full max-w-4xl flex flex-col md:flex-row items-center justify-center gap-8">
+          <AuthPanel
+            role="candidate"
+            title="Candidate Portal"
+            description="Apply for internships, take assessments, and track your progress."
+            icon={User}
+          />
+          <AuthPanel
+            role="recruiter"
+            title="Recruiter Portal"
+            description="Manage interviews, invite candidates, and analyze results."
+            icon={Briefcase}
+          />
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-12 text-center text-sm text-foreground/70">
+          &copy; {new Date().getFullYear()} Proctoring System. All rights reserved.
+        </footer>
       </div>
     </AuthProvider>
   );
