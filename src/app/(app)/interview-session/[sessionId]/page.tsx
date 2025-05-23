@@ -15,7 +15,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { useTheme } from 'next-themes';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 
-// Dynamically import the heavy real-time UI component (coding editor, chat, etc.)
+// Dynamically load the heavy real-time component
 const RealtimeInterviewUI = dynamic(
   () => import('@/components/interview/realtime-interview-ui'),
   {
@@ -25,8 +25,8 @@ const RealtimeInterviewUI = dynamic(
 );
 
 // -----------------------------------------------------------------------------
-// Mock Data for Live Interview Sessions
-// In production, replace this with an API call fetching session data by sessionId.
+// Mock Interview Sessions
+// In production, replace this mock with API integration
 // -----------------------------------------------------------------------------
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
   '1': {
@@ -36,28 +36,10 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     candidateName: 'Alex Johnson (You)',
     durationMinutes: 45,
     questions: [
-      {
-        id: 'live_q1_1',
-        text: 'Welcome! Tell me about yourself and your journey into frontend development.',
-        type: 'Discussion',
-        prompt: 'Focus on key experiences and motivations.'
-      },
-      {
-        id: 'live_q1_2',
-        text: 'Can you explain the concept of the Virtual DOM in React and its benefits?',
-        type: 'Discussion'
-      },
-      {
-        id: 'live_q1_3',
-        text: 'Write a debounce function in JavaScript. Consider edge cases and explain your approach.',
-        type: 'Coding',
-        language: 'javascript'
-      },
-      {
-        id: 'live_q1_4',
-        text: 'Describe a challenging technical problem you faced on a project and how you solved it.',
-        type: 'Discussion'
-      }
+      { id: 'live_q1_1', text: 'Welcome! Tell me about yourself and your journey into frontend development.', type: 'Discussion', prompt: 'Focus on key experiences and motivations.' },
+      { id: 'live_q1_2', text: 'Can you explain the concept of the Virtual DOM in React and its benefits?', type: 'Discussion' },
+      { id: 'live_q1_3', text: 'Write a debounce function in JavaScript. Consider edge cases and explain your approach.', type: 'Coding', language: 'javascript' },
+      { id: 'live_q1_4', text: 'Describe a challenging technical problem you faced on a project and how you solved it.', type: 'Discussion' }
     ]
   },
   '4': {
@@ -67,22 +49,9 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     candidateName: 'Jamie Lee (You)',
     durationMinutes: 30,
     questions: [
-      {
-        id: 'live_q4_1',
-        text: 'Could you start by walking us through one of your key portfolio pieces?',
-        type: 'Discussion',
-        prompt: 'Feel free to share your screen if needed.'
-      },
-      {
-        id: 'live_q4_2',
-        text: 'How do you incorporate user feedback into your design iterations?',
-        type: 'Discussion'
-      },
-      {
-        id: 'live_q4_3',
-        text: 'What design tools are you most proficient with, and why do you prefer them?',
-        type: 'Discussion'
-      }
+      { id: 'live_q4_1', text: 'Could you start by walking us through one of your key portfolio pieces?', type: 'Discussion', prompt: 'Feel free to share your screen if needed.' },
+      { id: 'live_q4_2', text: 'How do you incorporate user feedback into your design iterations?', type: 'Discussion' },
+      { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion' }
     ]
   },
   'default_live_interview': {
@@ -92,47 +61,33 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     candidateName: 'Candidate X (You)',
     durationMinutes: 20,
     questions: [
-      {
-        id: 'dli_q1',
-        text: 'What are your primary strengths as they relate to this role?',
-        type: 'Discussion'
-      },
-      {
-        id: 'dli_q2',
-        text: 'Please write a function to reverse a string in Python.',
-        type: 'Coding',
-        language: 'python'
-      },
-      {
-        id: 'dli_q3',
-        text: 'Do you have any questions for me about the role or the company?',
-        type: 'Discussion'
-      }
+      { id: 'dli_q1', text: 'What are your primary strengths as they relate to this role?', type: 'Discussion' },
+      { id: 'dli_q2', text: 'Please write a function to reverse a string in Python.', type: 'Coding', language: 'python' },
+      { id: 'dli_q3', text: 'Do you have any questions for me about the role or the company?', type: 'Discussion' }
     ]
   }
 };
 
 // -----------------------------------------------------------------------------
 // LiveInterviewPage Component
-// Renders header, progress, question panel animations, and controls
-// ----------------------------------------------------------------------------
+// Manages loading, error, progress, UI transitions, and controls only
+// -----------------------------------------------------------------------------
 export default function LiveInterviewPage() {
-  // === Route Parameter ===
   const params = useParams();
   const sessionId = typeof params.sessionId === 'string' ? params.sessionId : 'default_live_interview';
 
-  // === Theme Toggle ===
+  // Theme management
   const { theme, setTheme } = useTheme();
 
-  // === Local State ===
+  // Local state
   const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const isMounted = useRef(true);
 
-  // Fetch the session data (mocked)
-  const loadSession = useCallback(() => {
+  // Fetch session (mock)
+  const fetchSession = useCallback(() => {
     setLoading(true);
     setError(null);
     setTimeout(() => {
@@ -145,13 +100,11 @@ export default function LiveInterviewPage() {
   }, [sessionId]);
 
   useEffect(() => {
-    loadSession();
-    return () => {
-      isMounted.current = false;
-    };
-  }, [loadSession]);
+    fetchSession();
+    return () => { isMounted.current = false; };
+  }, [fetchSession]);
 
-  // If still loading
+  // Handle loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -160,7 +113,7 @@ export default function LiveInterviewPage() {
     );
   }
 
-  // If error
+  // Handle error state
   if (error || !sessionData) {
     return (
       <div className="flex items-center justify-center h-screen p-4">
@@ -173,58 +126,58 @@ export default function LiveInterviewPage() {
     );
   }
 
-  // Prepare question data
+  // Derived values
   const questions = sessionData.questions;
   const total = questions.length;
   const current = questions[currentIndex];
   const progressValue = useMemo(() => ((currentIndex + 1) / total) * 100, [currentIndex, total]);
 
   // Navigation handlers
-  const handleNext = () => { if (currentIndex < total - 1) setCurrentIndex(i => i + 1); };
-  const handlePrev = () => { if (currentIndex > 0) setCurrentIndex(i => i - 1); };
+  const nextQuestion = () => { if (currentIndex < total - 1) setCurrentIndex(i => i + 1); };
+  const prevQuestion = () => { if (currentIndex > 0) setCurrentIndex(i => i - 1); };
 
-  // Calculate time left (simple countdown from duration)
-  const elapsedMinutes = Math.floor(((Date.now() - (sessionData.startTimestamp || Date.now())) / 60000));
-  const timeLeft = sessionData.durationMinutes - elapsedMinutes;
+  // Timer (simple)
+  const elapsed = Math.floor((Date.now() - (sessionData.startTimestamp || Date.now())) / 60000);
+  const timeLeft = sessionData.durationMinutes - elapsed;
+
+  // Styling classes
+  const pageClasses = 'flex flex-col h-screen bg-background text-foreground select-none';
+  const headerClasses = 'flex items-center justify-between p-4 border-b';
+  const progressSection = 'px-4 py-2';
+  const contentClasses = 'flex-1 overflow-auto p-4';
+  const footerClasses = 'flex items-center justify-between p-4 border-t';
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground select-none">
-      {/* Header Section */}
-      <header className="flex items-center justify-between p-4 border-b">
+    <div className={pageClasses}>
+      {/* Header */}
+      <header className={headerClasses}>
         <div>
           <h1 className="text-2xl font-bold">{sessionData.title}</h1>
           <p className="text-sm text-muted-foreground">Interviewer: {sessionData.interviewerName}</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Tooltip content="Dark/Light Mode">
-            <Switch
-              checked={theme === 'dark'}
-              onCheckedChange={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            />
+          <Tooltip content="Toggle Dark/Light Mode">
+            <Switch checked={theme === 'dark'} onCheckedChange={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
           </Tooltip>
-          <Button size="sm" variant="ghost" onClick={() => setCurrentIndex(0)}>
-            Restart
-          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setCurrentIndex(0)}>Restart</Button>
         </div>
       </header>
 
-      {/* Progress Bar */}
-      <section className="px-4 py-2">
+      {/* Progress */}
+      <section className={progressSection}>
         <Progress value={progressValue} className="h-2 rounded-full" aria-label="Interview Progress" />
-        <p className="text-xs text-muted-foreground mt-1">
-          Question {currentIndex + 1} of {total}
-        </p>
+        <p className="text-xs text-muted-foreground mt-1">Question {currentIndex + 1} of {total}</p>
       </section>
 
-      {/* Animated Question & UI Container */}
-      <main className="flex-1 overflow-auto p-4">
+      {/* Animated Question & UI */}
+      <main className={contentClasses}>
         <AnimatePresence exitBeforeEnter>
           <motion.div
             key={current.id}
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -100, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
             className="space-y-6"
           >
             <div>
@@ -238,17 +191,11 @@ export default function LiveInterviewPage() {
         </AnimatePresence>
       </main>
 
-      {/* Footer Controls */}
-      <footer className="flex items-center justify-between p-4 border-t">
-        <Button onClick={handlePrev} disabled={currentIndex === 0} variant="outline">
-          Previous
-        </Button>
-        <div className="text-sm text-muted-foreground">
-          Time left: {timeLeft > 0 ? `${timeLeft} min` : '00:00'}
-        </div>
-        <Button onClick={handleNext} disabled={currentIndex === total - 1}>
-          Next
-        </Button>
+      {/* Footer */}
+      <footer className={footerClasses}>
+        <Button onClick={prevQuestion} disabled={currentIndex === 0} variant="outline">Previous</Button>
+        <div className="text-sm text-muted-foreground">Time left: {timeLeft > 0 ? `${timeLeft} min` : '00:00'}</div>
+        <Button onClick={nextQuestion} disabled={currentIndex === total - 1}>Next</Button>
       </footer>
     </div>
   );
