@@ -11,17 +11,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Briefcase } from 'lucide-react';
 
 const roleConfig = {
-  candidate: {
-    title: 'Candidate Portal',
-    description: 'Apply for internships, take assessments, and track your progress.',
-    icon: User,
-  },
-  recruiter: {
-    title: 'Recruiter Portal',
-    description: 'Manage interviews, invite candidates, and analyze results.',
-    icon: Briefcase,
-  },
+  candidate: { title: 'Candidate Portal', description: 'Apply for internships, take assessments, and track your progress.', icon: User },
+  recruiter: { title: 'Recruiter Portal', description: 'Manage interviews, invite candidates, and analyze results.', icon: Briefcase },
 } as const;
+
 type Role = keyof typeof roleConfig;
 
 export default function AuthPage() {
@@ -40,38 +33,26 @@ export default function AuthPage() {
           px-4
         "
       >
-        {/* Centered Column */}
         <div className="w-full max-w-md">
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
+          {/* Centered logo */}
+          <div className="flex justify-center mb-6">
             <AppLogo size="lg" />
           </div>
 
-          {/* Role Tabs */}
+          {/* Role selection tabs */}
           <Tabs value={role} onValueChange={setRole} className="mb-6">
-            <TabsList className="grid grid-cols-2 gap-1 bg-muted/20 rounded-md p-1">
-              <TabsTrigger
-                value="candidate"
-                className="data-[state=active]:bg-background data-[state=active]:shadow"
-              >
+            <TabsList className="grid grid-cols-2 gap-1 rounded-md border bg-muted/20 p-1">
+              <TabsTrigger value="candidate" className="data-[state=active]:bg-background">
                 Candidate
               </TabsTrigger>
-              <TabsTrigger
-                value="recruiter"
-                className="data-[state=active]:bg-background data-[state=active]:shadow"
-              >
+              <TabsTrigger value="recruiter" className="data-[state=active]:bg-background">
                 Recruiter
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {/* Your existing panel, untouched */}
-          <AuthPanel
-            role={role}
-            title={title}
-            description={description}
-            icon={icon}
-          />
+          {/* Your original AuthPanel, untouched */}
+          <AuthPanel role={role} title={title} description={description} icon={icon} />
 
           {/* Footer */}
           <footer className="mt-8 text-center text-sm text-foreground/70">
