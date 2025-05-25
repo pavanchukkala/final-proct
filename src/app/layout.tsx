@@ -1,17 +1,27 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppLogo } from '@/components/shared/app-logo';
+import { ShieldCheck } from 'lucide-react';
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const pathname = usePathname();
-  const showLogo = !pathname.startsWith('/auth'); // Hide logo on /auth route
+  const showLogo = !pathname.startsWith('/auth');
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-sm">
         <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           {showLogo && <AppLogo size="md" />}
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <ShieldCheck className="h-5 w-5" />
+            <span>Secure Exam Mode</span>
+          </div>
         </div>
       </header>
 
@@ -26,6 +36,4 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </footer>
     </div>
   );
-};
-
-export default Layout;
+}
