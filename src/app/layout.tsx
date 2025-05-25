@@ -19,20 +19,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
-        {/* NAVBAR */}
-        <nav className="bg-white shadow-md w-full">
-          <div className="flex items-center justify-between h-16 px-6">
-            <Link href="/" className="text-2xl font-bold">
-              Proctoring System
-            </Link>
-            <div className="flex items-center space-x-6 text-sm">
-              <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
-                Secure Exam Mode
-              </span>
-            </div>
-          </div>
-        </nav>
-
         {/* MAIN CONTENT: slightly inset at 99% width */}
         <main className="flex-grow w-[99%] mx-auto">
           {children}
