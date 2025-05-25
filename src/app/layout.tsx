@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppLogo } from '@/components/shared/app-logo';
 import { ShieldCheck } from 'lucide-react';
-
+import "./globals.css"; // Ensure your Tailwind CSS and custom variables load
 export default function RootLayout({
   children,
 }: {
