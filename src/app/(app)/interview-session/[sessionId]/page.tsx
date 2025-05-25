@@ -31,9 +31,9 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// Dynamically import the existing realtime interview UI
+// Properly import the RealtimeInterviewUI component
 const RealtimeInterviewUI = dynamic(
-  () => import('@/components/interview/realtime-interview-ui'),
+  () => import('@/components/interview/realtime-interview-ui').then(mod => mod.default),
   { ssr: false, suspense: true }
 );
 
