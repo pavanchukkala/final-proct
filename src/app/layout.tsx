@@ -26,15 +26,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               Proctoring System
             </Link>
             <div className="flex items-center space-x-6 text-sm">
-              <Link href="/auth" className="hover:underline">
-                Auth
-              </Link>
-              <Link href="/candidate/dashboard" className="hover:underline">
-                Candidate
-              </Link>
-              <Link href="/recruiter/dashboard" className="hover:underline">
-                Recruiter
-              </Link>
               <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
                 Secure Exam Mode
               </span>
@@ -42,8 +33,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         </nav>
 
-        {/* MAIN CONTENT: full‐width stretch */}
-        <main className="flex-grow w-full">
+        {/* MAIN CONTENT: slightly inset at 99% width */}
+        <main className="flex-grow w-[99%] mx-auto">
           {children}
         </main>
 
