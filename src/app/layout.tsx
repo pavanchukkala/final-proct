@@ -1,48 +1,48 @@
-// src/app/layout.tsx
-import { ReactNode } from "react";
-import Link from "next/link";
-import "./globals.css";
+// src/app/exam/layout.tsx
+import type { ReactNode } from 'react';
+import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
+// Your SVG icon replaced by lucide-react Briefcase icon for consistency
+import { Briefcase } from 'lucide-react';
 
-export const metadata = {
-  title: "Proctoring System",
-  description: "Secure exam & interview platform",
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function ExamLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0"
-        />
-      </head>
-      <body className="min-h-screen flex flex-col bg-gray-50">
-        {/* NAVBAR */}
-        <nav className="bg-white shadow-md w-full">
-          <div className="flex items-center justify-between h-16 px-6">
-            <div class="absolute top-6 left-6"><a class="flex items-center gap-2 group" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase text-primary group-hover:text-accent transition-colors" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg><h1 class="font-bold text-foreground group-hover:text-primary transition-colors text-3xl">Proctoring System</h1></a></div>
-            <div className="flex items-center space-x-6 text-sm">
-              <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
-                Secure Exam Mode
-              </span>
-            </div>
-          </div>
-        </nav>
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-sm">
+        {/* Responsive wrapper with 99% inset */}
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8 w-[99%] mx-auto">
+          {/* Logo & title */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <Briefcase
+              size={30}
+              className="text-primary group-hover:text-accent transition-colors"
+            />
+            <h1 className="font-bold text-foreground group-hover:text-primary transition-colors text-3xl">
+              Proctoring System
+            </h1>
+          </Link>
 
-        {/* MAIN CONTENT: slightly inset at 99% width */}
-        <main className="flex-grow w-[97.5%] mx-auto">
-          {children}
-        </main>
-
-        {/* FOOTER */}
-        <footer className="bg-white shadow-inner w-full">
-          <div className="text-center text-xs text-gray-500 py-4">
-            © {new Date().getFullYear()} Proctoring System. All rights reserved.
+          {/* Secure Exam pill */}
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <ShieldCheck className="h-5 w-5" />
+            <span>Secure Exam Mode</span>
           </div>
-        </footer>
-      </body>
-    </html>
+        </div>
+      </header>
+
+      <main className="flex-1 w-[99%] mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+        {children}
+      </main>
+
+      <footer className="py-4 text-center border-t bg-card/95 w-[99%] mx-auto">
+        <p className="text-xs text-muted-foreground">
+          &copy; {new Date().getFullYear()} Proctoring System. Best of luck!
+        </p>
+      </footer>
+    </div>
   );
 }
