@@ -36,9 +36,13 @@ const RealtimeInterviewUI = dynamic(
   () => import('@/components/interview/realtime-interview-ui').then(mod => mod.default),
   { ssr: false, suspense: true }
 );
-const CodeEditor = dynamic(
-  () => import('@/components/code-editor'),
-  { ssr: false }
+// Simple fallback editor
+const CodeEditor: React.FC<{value: string; onChange: (v: string) => void;}> = ({ value, onChange }) => (
+  <textarea
+    className="w-full h-full p-2 border rounded resize-none font-mono"
+    value={value}
+    onChange={e => onChange(e.target.value)}
+  />
 );
 
 // Fetch interview session metadata (replace with real API)
