@@ -49,21 +49,34 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
 };
 
 export default function LiveInterviewPage() {
+  // URL params
   const { sessionId: sid } = useParams();
   const sessionId = typeof sid === 'string' ? sid : 'default_live_interview';
 
-  // Mount and session state
+  // Refs
   const isMounted = useRef(true);
+
+  // Session state
   const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Media & permission state
+  // Media & permissions
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const [cameraState, setCameraState] = useState<PermissionState>('prompt');
   const [micState, setMicState] = useState<PermissionState>('prompt');
   const [secure, setSecure] = useState<boolean>(true);
+
+  // Interview navigation
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Derived values (must be after state declarations)
+  const questions = sessionData?.questions || [];
+  const total = questions.length;
+  const progress = useMemo(() => total > 0 ? ((currentIndex + 1) / total) * 100 : 0, [currentIndex, total]);
+  const elapsedMin = sessionData ? Math.floor((Date.now() - sessionData.startTimestamp) / 60000) : 0;
+  const timeLeft = sessionData ? sessionData.durationMinutes - elapsedMin : 0;
 
   // Fetch mock session
   const fetchSession = useCallback(() => {
@@ -99,7 +112,7 @@ export default function LiveInterviewPage() {
   // Handler to start media
   const startMedia = async () => {
     if (cameraState === 'denied' || micState === 'denied') {
-      setPermissionError('Permissions denied. Go to browser/site settings to re-enable camera & mic.');
+      setPermissionError('Permissions denied. Re-enable camera & mic in browser settings.');
       return;
     }
     setPermissionError(null);
@@ -114,29 +127,27 @@ export default function LiveInterviewPage() {
     }
   };
 
-  // Render loading
-  if (loading) return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
+  // Early returns & rendering
+  if (loading) {
+    return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
+  }
 
-  // Session load error
   if (error || !sessionData) {
     return <Alert variant="destructive"><AlertCircle />{error || 'Unknown error'}</Alert>;
   }
 
-  // Must be HTTPS
   if (!secure) {
     return <Alert variant="destructive"><AlertCircle />App requires HTTPS to access camera/mic.</Alert>;
   }
 
-  // If user denied perms
   if (cameraState === 'denied' || micState === 'denied') {
     return (
       <div className="p-4">
-        <Alert variant="destructive"><AlertCircle />Permissions are permanently denied. Please update browser or site settings to continue.</Alert>
+        <Alert variant="destructive"><AlertCircle />Permissions permanently denied. Update browser/site settings.</Alert>
       </div>
     );
   }
 
-  // Ask for perms / show error
   if (!mediaStream) {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4">
@@ -146,14 +157,6 @@ export default function LiveInterviewPage() {
       </div>
     );
   }
-
-  // Core interview UI
-  const questions = sessionData.questions;
-  const total = questions.length;
-  const [current, setCurrent] = useState(0);
-  const progress = useMemo(() => ((current + 1) / total) * 100, [current, total]);
-  const elapsedMin = Math.floor((Date.now() - sessionData.startTimestamp) / 60000);
-  const timeLeft = sessionData.durationMinutes - elapsedMin;
 
   return (
     <div className="flex flex-col h-screen">
@@ -171,7 +174,7 @@ export default function LiveInterviewPage() {
           <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin m-auto" />}>
             <RealtimeInterviewUI
               interviewSession={sessionData}
-              question={questions[current]}
+              question={questions[currentIndex]}
               mediaStream={mediaStream}
             />
           </Suspense>
@@ -179,9 +182,16 @@ export default function LiveInterviewPage() {
       </main>
 
       <footer className="p-4 flex justify-between border-t">
-        <Button onClick={() => setCurrent(i => Math.max(0, i - 1))} disabled={current === 0} variant="outline">Prev</Button>
-        <span className="text-sm">{current + 1} / {total}</span>
-        <Button onClick={() => setCurrent(i => Math.min(total - 1, i + 1))} disabled={current === total - 1}>Next</Button>
+        <Button
+          onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+          disabled={currentIndex === 0}
+          variant="outline"
+        >Prev</Button>
+        <span className="text-sm">{currentIndex + 1} / {total}</span>
+        <Button
+          onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}
+          disabled={currentIndex === total - 1}
+        >Next</Button>
       </footer>
     </div>
   );
