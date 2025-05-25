@@ -1,126 +1,120 @@
-// File: src/app/(app)/interview-session/[sessionId]/page.tsx
-
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { RealtimeInterviewUI } from '@/components/interview/realtime-interview-ui';
+import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { LiveInterviewSessionData } from '@/types';
 
-// Fetch session metadata (replace with real API)
-const fetchSessionData = async (sessionId: string): Promise<LiveInterviewSessionData> => {
-  // TODO: integrate your API
-  return {
-    title: 'Live Interview Session',
-    interviewerName: 'Interviewer Name',
-  };
+// Mock Live Interview Data - In a real app, this would be fetched from a backend
+const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
+  '1': { // Corresponds to Google Interview from candidate dashboard (ID '1')
+    id: '1',
+    title: 'Google Frontend Engineer – Live Interview',
+    interviewerName: 'Dr. Emily Carter',
+    candidateName: 'Alex Johnson (You)', // Assuming candidate is logged in
+    questions: [
+      { 
+        id: 'live_q1_1', 
+        text: 'Welcome! Tell me about yourself and your journey into frontend development.', 
+        type: 'Discussion', 
+        prompt: 'Focus on key experiences and motivations.'
+      },
+      { 
+        id: 'live_q1_2', 
+        text: 'Can you explain the concept of the Virtual DOM in React and its benefits?', 
+        type: 'Discussion',
+      },
+      { 
+        id: 'live_q1_3', 
+        text: 'Let\'s do a small coding exercise. Please write a JavaScript function to debounce another function. You can use the shared code editor.', 
+        type: 'Coding',
+        language: 'javascript',
+        prompt: 'Consider edge cases and explain your approach as you code.'
+      },
+      {
+        id: 'live_q1_4',
+        text: 'Describe a challenging technical problem you faced on a project and how you solved it.',
+        type: 'Discussion',
+      }
+    ],
+    durationMinutes: 45,
+  },
+   '4': { // Corresponds to Netflix UX Designer Interview from candidate dashboard (ID '4')
+    id: '4',
+    title: 'Netflix UX Designer – Live Portfolio Review',
+    interviewerName: 'Sarah Chen',
+    candidateName: 'Jamie Lee (You)',
+    questions: [
+        { id: 'live_q4_1', text: 'Thanks for joining! Could you start by walking us through one of your key portfolio pieces that you are most proud of?', type: 'Discussion', prompt: 'Feel free to share your screen if needed to show your work.' },
+        { id: 'live_q4_2', text: 'How do you typically incorporate user feedback into your design iterations?', type: 'Discussion' },
+        { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion'},
+    ],
+    durationMinutes: 30,
+  },
+  // Fallback live interview session
+  'default_live_interview': {
+    id: 'default_live_interview',
+    title: 'Standard Live Technical Screen',
+    interviewerName: 'Interviewer AI',
+    candidateName: 'Candidate X (You)',
+    questions: [
+      { id: 'dli_q1', text: 'What are your primary strengths as they relate to this role?', type: 'Discussion' },
+      { id: 'dli_q2', text: 'Please write a simple function to reverse a string in the shared editor.', type: 'Coding', language: 'python' },
+      { id: 'dli_q3', text: 'Do you have any questions for me about the role or the company?', type: 'Discussion' },
+    ],
+    durationMinutes: 20,
+  }
 };
 
+
 export default function LiveInterviewPage() {
-  const { sessionId } = useParams();
-  const sid = typeof sessionId === 'string' ? sessionId : 'default';
-
-  const localRef = useRef<HTMLVideoElement>(null);
-  const remoteRef = useRef<HTMLVideoElement>(null);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [permissionError, setPermissionError] = useState<string | null>(null);
-
-  const [session, setSession] = useState<LiveInterviewSessionData | null>(null);
+  const params = useParams();
+  const sessionId = typeof params.sessionId === 'string' ? params.sessionId : 'default_live_interview';
+  const [interviewSessionData, setInterviewSessionData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [code, setCode] = useState<string>("// Type code here when prompted...\n");
-
-  // Load session
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await fetchSessionData(sid);
-        setSession(data);
-      } catch {
-        setError('Failed to load session.');
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    // Simulate API fetch
+    setTimeout(() => {
+      const fetchedSessionData = mockLiveInterviewSessions[sessionId] || mockLiveInterviewSessions['default_live_interview'];
+      if (fetchedSessionData) {
+        setInterviewSessionData(fetchedSessionData);
+        setError(null);
+      } else {
+        setError('Live interview session not found. Please check the link or contact support.');
+        setInterviewSessionData(null);
       }
-    })();
-  }, [sid]);
+      setLoading(false);
+    }, 700); // Slightly longer to simulate data fetch
+  }, [sessionId]);
 
-  // Start media
-  const startMedia = useCallback(async () => {
-    setPermissionError(null);
-    try {
-      const ms = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(ms);
-      if (localRef.current) localRef.current.srcObject = ms;
-      // TODO: Initialize WebRTC signaling to set remote feed on remoteRef
-    } catch (e: any) {
-      console.error(e);
-      setPermissionError('Enable camera & microphone in browser settings.');
-    }
-  }, []);
-
-  if (loading) return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
-  if (error || !session) {
+  if (loading) {
     return (
-      <Alert variant="destructive" className="m-4">
-        <AlertCircle />
-        <AlertTitle>{error || 'Session not found'}</AlertTitle>
-      </Alert>
-    );
-  }
-
-  if (!localStream) {
-    return (
-      <div className="flex items-center justify-center h-screen p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Join Live Interview</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p>The interviewer will ask questions over live video/audio. Enable camera & mic to join.</p>
-            {permissionError && (
-              <Alert variant="destructive"><AlertCircle /> {permissionError}</Alert>
-            )}
-            <Button onClick={startMedia}>Enable Camera & Mic</Button>
-          </CardContent>
-        </Card>
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Preparing your live interview session...</p>
       </div>
     );
   }
 
-  return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b">
-        <h1 className="text-2xl font-semibold">{session.title}</h1>
-        <p className="text-sm text-muted-foreground">Interviewer: {session.interviewerName}</p>
-      </header>
-
-      {/* Main: video + code editor */}
-      <div className="flex flex-1">
-        <div className="w-1/3 border-r p-4 space-y-4">
-          <video ref={remoteRef} autoPlay playsInline className="w-full h-64 bg-black rounded-lg" />
-          <video ref={localRef} autoPlay muted playsInline className="w-1/3 h-32 bg-black rounded-lg absolute bottom-4 left-4 border-2 border-white" />
-        </div>
-        <div className="flex-1 p-4 flex flex-col">
-          <div className="flex-1 border rounded p-2 bg-gray-50">
-            {/* placeholder for code editor when needed */}
-            <textarea
-              className="w-full h-full p-2 font-mono text-sm"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              placeholder="Write code here when the interviewer asks you to solve a problem..."
-            />
-          </div>
-          <Button className="mt-2 self-end" onClick={() => console.log('Submit code', code)}>
-            Submit Code
-          </Button>
-        </div>
+  if (error || !interviewSessionData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
+         <Alert variant="destructive" className="max-w-lg">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error Loading Interview</AlertTitle>
+            <AlertDescription>
+              {error || "Could not load the interview session data. Please try again later or contact support."}
+            </AlertDescription>
+          </Alert>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return <RealtimeInterviewUI interviewSession={interviewSessionData} />;
 }
