@@ -15,12 +15,31 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     interviewerName: 'Dr. Emily Carter',
     candidateName: 'Alex Johnson (You)',
     questions: [
-      { id: 'live_q1_1', text: 'Welcome! Tell me about yourself and your journey into frontend development.', type: 'Discussion', prompt: 'Focus on key experiences and motivations.' },
-      { id: 'live_q1_2', text: 'Can you explain the concept of the Virtual DOM in React and its benefits?', type: 'Discussion' },
-      { id: 'live_q1_3', text: 'Let\'s do a small coding exercise. Please write a JavaScript function to debounce another function. You can use the shared code editor.', type: 'Coding', language: 'javascript', prompt: 'Consider edge cases and explain your approach as you code.' },
-      { id: 'live_q1_4', text: 'Describe a challenging technical problem you faced on a project and how you solved it.', type: 'Discussion' }
+      {
+        id: 'live_q1_1',
+        text: 'Welcome! Tell me about yourself and your journey into frontend development.',
+        type: 'Discussion',
+        prompt: 'Focus on key experiences and motivations.'
+      },
+      {
+        id: 'live_q1_2',
+        text: 'Can you explain the concept of the Virtual DOM in React and its benefits?',
+        type: 'Discussion'
+      },
+      {
+        id: 'live_q1_3',
+        text: 'Let\'s do a small coding exercise. Please write a JavaScript function to debounce another function. You can use the shared code editor.',
+        type: 'Coding',
+        language: 'javascript',
+        prompt: 'Consider edge cases and explain your approach as you code.'
+      },
+      {
+        id: 'live_q1_4',
+        text: 'Describe a challenging technical problem you faced on a project and how you solved it.',
+        type: 'Discussion'
+      }
     ],
-    durationMinutes: 45,
+    durationMinutes: 45
   },
   '4': {
     id: '4',
@@ -28,11 +47,24 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     interviewerName: 'Sarah Chen',
     candidateName: 'Jamie Lee (You)',
     questions: [
-      { id: 'live_q4_1', text: 'Thanks for joining! Could you start by walking us through one of your key portfolio pieces that you are most proud of?', type: 'Discussion', prompt: 'Feel free to share your screen if needed to show your work.' },
-      { id: 'live_q4_2', text: 'How do you typically incorporate user feedback into your design iterations?', type: 'Discussion' },
-      { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion' }
+      {
+        id: 'live_q4_1',
+        text: 'Thanks for joining! Could you start by walking us through one of your key portfolio pieces that you are most proud of?',
+        type: 'Discussion',
+        prompt: 'Feel free to share your screen if needed to show your work.'
+      },
+      {
+        id: 'live_q4_2',
+        text: 'How do you typically incorporate user feedback into your design iterations?',
+        type: 'Discussion'
+      },
+      {
+        id: 'live_q4_3',
+        text: 'What design tools are you most proficient with, and why do you prefer them?',
+        type: 'Discussion'
+      }
     ],
-    durationMinutes: 30,
+    durationMinutes: 30
   },
   'default_live_interview': {
     id: 'default_live_interview',
@@ -40,17 +72,32 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     interviewerName: 'Interviewer AI',
     candidateName: 'Candidate X (You)',
     questions: [
-      { id: 'dli_q1', text: 'What are your primary strengths as they relate to this role?', type: 'Discussion' },
-      { id: 'dli_q2', text: 'Please write a simple function to reverse a string in the shared editor.', type: 'Coding', language: 'python' },
-      { id: 'dli_q3', text: 'Do you have any questions for me about the role or the company?', type: 'Discussion' }
+      {
+        id: 'dli_q1',
+        text: 'What are your primary strengths as they relate to this role?',
+        type: 'Discussion'
+      },
+      {
+        id: 'dli_q2',
+        text: 'Please write a simple function to reverse a string in the shared editor.',
+        type: 'Coding',
+        language: 'python'
+      },
+      {
+        id: 'dli_q3',
+        text: 'Do you have any questions for me about the role or the company?',
+        type: 'Discussion'
+      }
     ],
-    durationMinutes: 20,
+    durationMinutes: 20
   }
 };
 
 export default function LiveInterviewPage() {
   const params = useParams();
-  const sessionId = typeof params.sessionId === 'string' ? params.sessionId : 'default_live_interview';
+  const sessionId = typeof params.sessionId === 'string'
+    ? params.sessionId
+    : 'default_live_interview';
   const [interviewSessionData, setInterviewSessionData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +106,10 @@ export default function LiveInterviewPage() {
     setLoading(true);
     // Simulate API fetch
     setTimeout(() => {
-      const fetchedSessionData = mockLiveInterviewSessions[sessionId] || mockLiveInterviewSessions['default_live_interview'];
+      const fetchedSessionData =
+        mockLiveInterviewSessions[sessionId] ||
+        mockLiveInterviewSessions['default_live_interview'];
+
       if (fetchedSessionData) {
         setInterviewSessionData(fetchedSessionData);
         setError(null);
@@ -67,6 +117,7 @@ export default function LiveInterviewPage() {
         setError('Live interview session not found. Please check the link or contact support.');
         setInterviewSessionData(null);
       }
+
       setLoading(false);
     }, 700);
   }, [sessionId]);
@@ -91,7 +142,8 @@ export default function LiveInterviewPage() {
             <div className="ml-3">
               <AlertTitle className="text-red-800 text-lg">Error Loading Interview</AlertTitle>
               <AlertDescription className="text-red-700">
-                {error || "Could not load the interview session data. Please try again later or contact support."}
+                {error ||
+                  "Could not load the interview session data. Please try again later or contact support."}
               </AlertDescription>
             </div>
           </div>
