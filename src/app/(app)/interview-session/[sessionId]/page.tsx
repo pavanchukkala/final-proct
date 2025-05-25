@@ -12,20 +12,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 
-// Custom Error Boundary for UI failures
+// Error boundary for UI errors
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error: Error) {
-    console.error('ErrorBoundary caught:', error);
-  }
+  componentDidCatch(error: Error) { console.error('ErrorBoundary caught:', error); }
   render() {
     if (this.state.hasError) {
       return (
         <Alert variant="destructive" className="m-4">
           <AlertCircle />
-          <AlertTitle>Oops, something broke</AlertTitle>
-          <AlertDescription>Contact support or refresh.</AlertDescription>
+          <AlertTitle>UI failed to load</AlertTitle>
+          <AlertDescription>Refresh or contact support.</AlertDescription>
         </Alert>
       );
     }
@@ -33,25 +31,22 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// Dynamic import of proctoring UI component
-const ProctoringUI = dynamic(
-  async () => {
-    const mod = await import('@/components/interview/proctoring-ui');
-    return mod.default ?? mod.ProctoringUI;
-  },
+// Dynamically import the existing realtime interview UI
+const RealtimeInterviewUI = dynamic(
+  () => import('@/components/interview/realtime-interview-ui'),
   { ssr: false, suspense: true }
 );
 
-// Replace with real API call in production
+// Placeholder API fetch - swap with real API
 const fetchSessionData = async (sessionId: string): Promise<LiveInterviewSessionData> => {
-  // placeholder: fetch(`/api/sessions/${sessionId}`).then(r => r.json())
   return {
     title: 'Live Interview Session',
     interviewerName: 'Recruiter Name',
+    startTimestamp: Date.now(),
+    durationMinutes: 0,
     questions: [
       { id: 'q1', prompt: 'Explain closure in JavaScript.' },
       { id: 'q2', prompt: 'Design an LRU cache.' },
-      // ...
     ],
   };
 };
@@ -67,16 +62,15 @@ export default function LiveInterviewPage() {
   const [session, setSession] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Fetch live session data
+  // Load session data
   useEffect(() => {
     (async () => {
       try {
         const data = await fetchSessionData(sid);
         setSession(data);
-      } catch (e: any) {
+      } catch {
         setError('Unable to load session.');
       } finally {
         setLoading(false);
@@ -84,7 +78,7 @@ export default function LiveInterviewPage() {
     })();
   }, [sid]);
 
-  // Request camera & mic
+  // Start media capture
   const startProctoring = useCallback(async () => {
     setPermissionError(null);
     try {
@@ -97,9 +91,7 @@ export default function LiveInterviewPage() {
     }
   }, []);
 
-  if (loading) {
-    return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
-  }
+  if (loading) return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
   if (error || !session) {
     return (
       <Alert variant="destructive" className="m-4">
@@ -109,7 +101,6 @@ export default function LiveInterviewPage() {
     );
   }
 
-  // Before proctoring enabled
   if (!stream) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6">
@@ -137,7 +128,6 @@ export default function LiveInterviewPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Header */}
       <header className="flex items-center justify-between p-4 border-b">
         <div>
           <h1 className="text-2xl font-semibold">{session.title}</h1>
@@ -145,50 +135,27 @@ export default function LiveInterviewPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="flex flex-1">
-        {/* Video + Proctoring UI */}
         <div className="w-1/3 border-r p-4 space-y-4">
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-64 bg-black rounded-lg"
-          />
+          <video ref={videoRef} autoPlay muted playsInline className="w-full h-64 bg-black rounded-lg" />
           <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
-            <ProctoringUI stream={stream} />
+            <RealtimeInterviewUI interviewSession={session} question={current} mediaStream={stream} />
           </Suspense>
         </div>
 
-        {/* Question Panel */}
         <div className="flex-1 p-6 space-y-6 overflow-auto">
           <Card>
             <CardHeader>
-              <CardTitle>
-                Question {currentIndex + 1} of {total}
-              </CardTitle>
+              <CardTitle>Question {currentIndex + 1} of {total}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-lg">{current.prompt}</p>
             </CardContent>
           </Card>
 
-          {/* Navigation */}
           <div className="flex justify-between">
-            <Button
-              variant="outline"
-              disabled={currentIndex === 0}
-              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-            >
-              Previous
-            </Button>
-            <Button
-              disabled={currentIndex === total - 1}
-              onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}
-            >
-              Next
-            </Button>
+            <Button variant="outline" disabled={currentIndex === 0} onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}>Previous</Button>
+            <Button disabled={currentIndex === total - 1} onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}>Next</Button>
           </div>
         </div>
       </div>
