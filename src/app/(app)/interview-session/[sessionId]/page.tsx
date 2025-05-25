@@ -2,27 +2,30 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 
-// Error boundary for UI errors
+// Custom Error Boundary for UI failures
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error: Error) { console.error('ErrorBoundary caught:', error); }
+  componentDidCatch(error: Error) {
+    console.error('ErrorBoundary caught:', error);
+  }
   render() {
     if (this.state.hasError) {
       return (
         <Alert variant="destructive" className="m-4">
           <AlertCircle />
-          <AlertTitle>UI failed to load</AlertTitle>
-          <AlertDescription>Refresh or contact support.</AlertDescription>
+          <AlertTitle>Oops, something broke</AlertTitle>
+          <AlertDescription>Contact support or refresh.</AlertDescription>
         </Alert>
       );
     }
@@ -30,158 +33,165 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// Dynamically load the RealtimeInterviewUI, selecting the correct export
-const RealtimeInterviewUI = dynamic(
+// Dynamic import of proctoring UI component
+const ProctoringUI = dynamic(
   async () => {
-    const mod = await import('@/components/interview/realtime-interview-ui');
-    return mod.default ?? mod.RealtimeInterviewUI;
+    const mod = await import('@/components/interview/proctoring-ui');
+    return mod.default ?? mod.ProctoringUI;
   },
   { ssr: false, suspense: true }
 );
 
-// Mock session data (replace in production)
-const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
-  default_live_interview: {
+// Replace with real API call in production
+const fetchSessionData = async (sessionId: string): Promise<LiveInterviewSessionData> => {
+  // placeholder: fetch(`/api/sessions/${sessionId}`).then(r => r.json())
+  return {
     title: 'Live Interview Session',
-    interviewerName: 'Interviewer Name',
-    startTimestamp: Date.now(),
-    durationMinutes: 0,
-    questions: [],
-  },
+    interviewerName: 'Recruiter Name',
+    questions: [
+      { id: 'q1', prompt: 'Explain closure in JavaScript.' },
+      { id: 'q2', prompt: 'Design an LRU cache.' },
+      // ...
+    ],
+  };
 };
 
 export default function LiveInterviewPage() {
-  const { sessionId: sid } = useParams();
-  const sessionId = typeof sid === 'string' ? sid : 'default_live_interview';
+  const { sessionId } = useParams();
+  const sid = typeof sessionId === 'string' ? sessionId : 'default';
 
-  const isMounted = useRef(true);
-  const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
+
+  const [session, setSession] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Media & permission states
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [permissionError, setPermissionError] = useState<string | null>(null);
-  const [cameraState, setCameraState] = useState<PermissionState>('prompt');
-  const [micState, setMicState] = useState<PermissionState>('prompt');
-  const [secure, setSecure] = useState<boolean>(true);
-
-  // Interview navigation
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Derived values
-  const questions = sessionData?.questions || [];
-  const total = questions.length;
-  const progress = useMemo(() => (total > 0 ? ((currentIndex + 1) / total) * 100 : 0), [currentIndex, total]);
-
-  const fetchSession = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    setTimeout(() => {
-      if (!isMounted.current) return;
-      const data = mockLiveInterviewSessions[sessionId] || mockLiveInterviewSessions.default_live_interview;
-      if (data) setSessionData(data);
-      else setError('Session not found');
-      setLoading(false);
-    }, 300);
-  }, [sessionId]);
-
+  // Fetch live session data
   useEffect(() => {
-    fetchSession();
-    return () => { isMounted.current = false; };
-  }, [fetchSession]);
+    (async () => {
+      try {
+        const data = await fetchSessionData(sid);
+        setSession(data);
+      } catch (e: any) {
+        setError('Unable to load session.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [sid]);
 
-  useEffect(() => {
-    setSecure(window.isSecureContext);
-    navigator.permissions.query({ name: 'camera' }).then(res => {
-      setCameraState(res.state);
-      res.onchange = () => setCameraState(res.state);
-    });
-    navigator.permissions.query({ name: 'microphone' }).then(res => {
-      setMicState(res.state);
-      res.onchange = () => setMicState(res.state);
-    });
-  }, []);
-
-  const startMedia = async () => {
-    if (cameraState === 'denied' || micState === 'denied') {
-      setPermissionError('Permissions denied. Re-enable camera & mic in browser settings.');
-      return;
-    }
+  // Request camera & mic
+  const startProctoring = useCallback(async () => {
     setPermissionError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setMediaStream(stream);
-    } catch (err: any) {
-      console.error('getUserMedia error:', err);
-      setPermissionError(
-        err.name === 'NotAllowedError'
-          ? 'Access denied. Enable camera & microphone in browser settings.'
-          : 'Error accessing camera/microphone.'
-      );
+      const media = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setStream(media);
+      if (videoRef.current) videoRef.current.srcObject = media;
+    } catch (e: any) {
+      console.error('getUserMedia error:', e);
+      setPermissionError('Enable camera & mic in browser settings to continue.');
     }
-  };
+  }, []);
 
-  // Early returns & rendering
-  if (loading) return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
-  if (error || !sessionData) return <Alert variant="destructive"><AlertCircle />{error || 'Unknown error'}</Alert>;
-  if (!secure) return <Alert variant="destructive"><AlertCircle />App requires HTTPS to access camera/mic.</Alert>;
-  if (cameraState === 'denied' || micState === 'denied') {
+  if (loading) {
+    return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
+  }
+  if (error || !session) {
     return (
-      <div className="p-4">
-        <Alert variant="destructive"><AlertCircle />Permissions permanently denied. Update browser/site settings.</Alert>
+      <Alert variant="destructive" className="m-4">
+        <AlertCircle />
+        <AlertTitle>{error || 'Session not found'}</AlertTitle>
+      </Alert>
+    );
+  }
+
+  // Before proctoring enabled
+  if (!stream) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle>Join Live Interview</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>Please enable your camera and microphone to start the live interview.</p>
+            {permissionError && (
+              <Alert variant="destructive">
+                <AlertCircle /> {permissionError}
+              </Alert>
+            )}
+            <Button onClick={startProctoring}>Enable Camera & Mic</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-  if (!mediaStream) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-        <p className="text-lg">Enable camera & microphone to join the live interview.</p>
-        {permissionError && <Alert variant="destructive"><AlertCircle /> {permissionError}</Alert>}
-        <Button onClick={startMedia}>Enable Camera & Mic</Button>
-      </div>
-    );
-  }
+
+  const questions = session.questions;
+  const total = questions.length;
+  const current = questions[currentIndex];
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="p-4 flex justify-between border-b">
+    <div className="flex flex-col h-screen bg-background">
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 border-b">
         <div>
-          <h1 className="text-2xl font-bold">{sessionData.title}</h1>
-          <p className="text-sm text-muted-foreground">Interviewer: {sessionData.interviewerName}</p>
+          <h1 className="text-2xl font-semibold">{session.title}</h1>
+          <p className="text-sm text-muted-foreground">Interviewer: {session.interviewerName}</p>
         </div>
-        {/* No timer: live session handled by recruiter */}
       </header>
 
-      {/* Progress bar */}
-      <div className="w-full bg-muted h-2 rounded-full m-4">
-        <div className="bg-primary h-full rounded-full" style={{ width: `${progress}%` }} />
-      </div>
-
-      <main className="flex-1 p-4 overflow-auto">
-        <ErrorBoundary>
-          <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin m-auto" />}>
-            <RealtimeInterviewUI
-              interviewSession={sessionData}
-              question={questions[currentIndex]}
-              mediaStream={mediaStream}
-            />
+      {/* Main Content */}
+      <div className="flex flex-1">
+        {/* Video + Proctoring UI */}
+        <div className="w-1/3 border-r p-4 space-y-4">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-64 bg-black rounded-lg"
+          />
+          <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
+            <ProctoringUI stream={stream} />
           </Suspense>
-        </ErrorBoundary>
-      </main>
+        </div>
 
-      <footer className="p-4 flex justify-between border-t">
-        <Button
-          onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-          disabled={currentIndex === 0}
-          variant="outline"
-        >Previous</Button>
-        <span className="text-sm">{currentIndex + 1} / {total}</span>
-        <Button
-          onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}
-          disabled={currentIndex === total - 1}
-        >Next</Button>
-      </footer>
+        {/* Question Panel */}
+        <div className="flex-1 p-6 space-y-6 overflow-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Question {currentIndex + 1} of {total}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg">{current.prompt}</p>
+            </CardContent>
+          </Card>
+
+          {/* Navigation */}
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              disabled={currentIndex === 0}
+              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+            >
+              Previous
+            </Button>
+            <Button
+              disabled={currentIndex === total - 1}
+              onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
