@@ -1,9 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState, useRef, useEffect } from 'react';
 import { AppLogo } from '@/components/shared/app-logo';
 import { ShieldCheck, UserCircle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function RootLayout({
   children,
@@ -24,14 +24,14 @@ export default function RootLayout({
   }, []);
 
   const handleLogout = () => {
-    // TODO: Implement real logout logic
-    console.log('Logged out');
+    // TODO: Hook up actual logout
+    console.log('Logout clicked');
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-sm">
-        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <AppLogo size="md" />
 
           <div className="flex items-center gap-6">
@@ -40,16 +40,16 @@ export default function RootLayout({
               <span>Secure Exam Mode</span>
             </div>
 
-            {/* Profile Icon with Dropdown */}
+            {/* Profile dropdown */}
             <div className="relative" ref={dropdownRef}>
               <UserCircle
                 className="h-7 w-7 cursor-pointer text-primary hover:text-accent transition-colors"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               />
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-card border rounded-md shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-36 bg-card border border-border rounded-md shadow-lg z-50">
                   <button
-                    className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-muted transition"
+                    className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
                     onClick={handleLogout}
                   >
                     Logout
@@ -61,7 +61,7 @@ export default function RootLayout({
         </div>
       </header>
 
-      <main className="flex-1 container py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 container mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
         {children}
       </main>
 
