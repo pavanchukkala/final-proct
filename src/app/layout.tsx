@@ -1,9 +1,7 @@
 // src/app/layout.tsx
 import { ReactNode } from "react";
 import Link from "next/link";
-
-// ← Updated import to point at the root `styles/globals.css` file
-import "../../styles/globals.css";
+import "../styles/globals.css";  // ← fixed path
 
 export const metadata = {
   title: "Proctoring System",
@@ -29,21 +27,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <span className="text-2xl font-bold">Proctoring System</span>
               </Link>
               <div className="flex items-center space-x-4 text-sm">
-                <Link href="/auth" className="hover:underline">
-                  Auth
-                </Link>
-                <Link
-                  href="/candidate/dashboard"
-                  className="hover:underline"
-                >
-                  Candidate
-                </Link>
-                <Link
-                  href="/recruiter/dashboard"
-                  className="hover:underline"
-                >
-                  Recruiter
-                </Link>
+                <Link href="/auth" className="hover:underline">Auth</Link>
+                <Link href="/candidate/dashboard" className="hover:underline">Candidate</Link>
+                <Link href="/recruiter/dashboard" className="hover:underline">Recruiter</Link>
                 <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
                   Secure Exam Mode
                 </span>
