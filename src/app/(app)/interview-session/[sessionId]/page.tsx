@@ -32,8 +32,16 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 // Properly import the RealtimeInterviewUI component
+// Properly import the RealtimeInterviewUI component, handling named/default exports
 const RealtimeInterviewUI = dynamic(
-  () => import('@/components/interview/realtime-interview-ui').then(mod => mod.default),
+  async () => {
+    const mod = await import('@/components/interview/realtime-interview-ui');
+    const comp = (mod as any).default ?? (mod as any).RealtimeInterviewUI;
+    if (!comp) {
+      throw new Error('RealtimeInterviewUI component not found in module');
+    }
+    return comp;
+  },
   { ssr: false, suspense: true }
 );
 
