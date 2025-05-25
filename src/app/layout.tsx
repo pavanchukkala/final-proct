@@ -22,7 +22,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* NAVBAR */}
         <nav className="bg-white shadow-md w-full">
           <div className="flex items-center justify-between h-16 px-6">
+            <Link href="/" className="text-2xl font-bold">
+              Proctoring System
+            </Link>
             <div className="flex items-center space-x-6 text-sm">
+              <Link href="/auth" className="hover:underline">
+                Auth
+              </Link>
+              <Link href="/candidate/dashboard" className="hover:underline">
+                Candidate
+              </Link>
+              <Link href="/recruiter/dashboard" className="hover:underline">
+                Recruiter
+              </Link>
               <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
                 Secure Exam Mode
               </span>
