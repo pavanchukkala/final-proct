@@ -1,7 +1,9 @@
 // src/app/layout.tsx
 import { ReactNode } from "react";
 import Link from "next/link";
-import "@/styles/globals.css"; // adjust if your global CSS import differs
+
+// ← Updated import to point at the root `styles/globals.css` file
+import "../../styles/globals.css";
 
 export const metadata = {
   title: "Proctoring System",
@@ -17,7 +19,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           name="viewport"
           content="width=device-width, initial-scale=1.0"
         />
-        {/* add other global meta/titles here */}
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
         {/* NAVBAR */}
@@ -43,7 +44,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 >
                   Recruiter
                 </Link>
-                {/* Mode pill can stay here or you can render per-page */}
                 <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
                   Secure Exam Mode
                 </span>
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         </main>
 
-        {/* FOOTER (optional) */}
+        {/* FOOTER */}
         <footer className="bg-white shadow-inner">
           <div className="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-gray-500">
             © {new Date().getFullYear()} Proctoring System. All rights reserved.
