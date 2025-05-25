@@ -1,7 +1,7 @@
 // src/app/layout.tsx
 import { ReactNode } from "react";
 import Link from "next/link";
-import "../styles/globals.css";  // ← fixed path
+import "styles/globals.css"; 
 
 export const metadata = {
   title: "Proctoring System",
