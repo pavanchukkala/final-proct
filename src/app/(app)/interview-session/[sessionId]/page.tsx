@@ -1,4 +1,5 @@
 // File: src/app/(app)/interview-session/[sessionId]/page.tsx
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
@@ -37,39 +38,47 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// Dynamically load the heavy real-time component
+// Dynamically load the heavy real-time component (no SSR)
 const RealtimeInterviewUI = dynamic(
   () => import('@/components/interview/realtime-interview-ui'),
-  {
-    ssr: false,
-    suspense: true,
-  }
+  { ssr: false, suspense: true }
 );
 
 // -----------------------------------------------------------------------------
-// Mock Interview Sessions
-// In production, replace this mock with API integration
+// Mock Interview Sessions (replace with real API calls in production)
 // -----------------------------------------------------------------------------
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
-  /* existing mock data unchanged */
+  default_live_interview: {
+    title: 'Live Coding Interview',
+    interviewerName: 'Jane Doe',
+    startTimestamp: Date.now(),
+    durationMinutes: 60,
+    questions: [
+      /* ... TestQuestion[] ... */
+    ],
+  },
+  // other mock sessions
 };
 
 // -----------------------------------------------------------------------------
 // LiveInterviewPage Component
-// Wraps the RealtimeInterviewUI in Suspense and ErrorBoundary to catch client errors
 // -----------------------------------------------------------------------------
 export default function LiveInterviewPage() {
   const params = useParams();
   const sessionId = typeof params.sessionId === 'string' ? params.sessionId : 'default_live_interview';
 
-  // Local state
+  // Session fetch state
   const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Permission & media stream state
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
+
   const isMounted = useRef(true);
 
-  // Fetch session (mock)
+  // Fetch session data (mocked)
   const fetchSession = useCallback(() => {
     setLoading(true);
     setError(null);
@@ -87,6 +96,23 @@ export default function LiveInterviewPage() {
     return () => { isMounted.current = false; };
   }, [fetchSession]);
 
+  // Request camera/microphone on user gesture
+  const startMediaStream = async () => {
+    setPermissionError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setMediaStream(stream);
+    } catch (err: any) {
+      console.error('getUserMedia error:', err);
+      if (err.name === 'NotAllowedError') {
+        setPermissionError('Camera/microphone access was denied. Please enable permissions in your browser settings.');
+      } else {
+        setPermissionError('Unable to access camera/microphone.');
+      }
+    }
+  };
+
+  // Render loading or error states
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -107,17 +133,28 @@ export default function LiveInterviewPage() {
     );
   }
 
-  // Derived values
+  // If media not started, prompt user
+  if (!mediaStream) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4 space-y-4">
+        <p className="text-lg">Click below to enable your camera and microphone to start the interview.</p>
+        {permissionError && <Alert variant="destructive"><AlertCircle /> {permissionError}</Alert>}
+        <Button onClick={startMediaStream}>Enable Camera & Mic</Button>
+      </div>
+    );
+  }
+
+  // Interview UI once media is available
   const questions = sessionData.questions;
   const total = questions.length;
+  const [currentIndex, setCurrentIndex] = useState(0);
   const current = questions[currentIndex];
   const progressValue = useMemo(() => ((currentIndex + 1) / total) * 100, [currentIndex, total]);
-
-  // Handlers
-  const nextQuestion = () => { if (currentIndex < total - 1) setCurrentIndex(i => i + 1); };
-  const prevQuestion = () => { if (currentIndex > 0) setCurrentIndex(i => i - 1); };
   const elapsed = Math.floor((Date.now() - (sessionData.startTimestamp || Date.now())) / 60000);
   const timeLeft = sessionData.durationMinutes - elapsed;
+
+  const nextQuestion = () => { if (currentIndex < total - 1) setCurrentIndex(i => i + 1); };
+  const prevQuestion = () => { if (currentIndex > 0) setCurrentIndex(i => i - 1); };
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground select-none">
@@ -137,11 +174,15 @@ export default function LiveInterviewPage() {
         </p>
       </section>
 
-      {/* Question & UI Container */}
+      {/* Live UI */}
       <main className="flex-1 overflow-auto p-4">
         <ErrorBoundary>
           <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin text-primary m-auto" />}>
-            <RealtimeInterviewUI interviewSession={sessionData} question={current} />
+            <RealtimeInterviewUI
+              interviewSession={sessionData}
+              question={current}
+              mediaStream={mediaStream}
+            />
           </Suspense>
         </ErrorBoundary>
       </main>
