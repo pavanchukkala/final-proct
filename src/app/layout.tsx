@@ -1,8 +1,9 @@
 // src/app/layout.tsx
 import { ReactNode } from "react";
 import Link from "next/link";
-// ——— Correct path to your globals.css — three levels up from src/app/
-import "../../../styles/globals.css";
+
+// Correct path: globals.css is in src/app/
+import "./globals.css";
 
 export const metadata = {
   title: "Proctoring System",
