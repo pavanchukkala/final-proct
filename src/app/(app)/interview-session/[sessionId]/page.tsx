@@ -9,7 +9,8 @@ import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+// Removed Progress import to avoid SVG path parsing errors
+// import { Progress } from '@/components/ui/progress';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 
 // Error boundary for UI errors
@@ -155,7 +156,10 @@ export default function LiveInterviewPage() {
         <div className="text-sm">Time left: {timeLeft > 0 ? `${timeLeft} min` : '00:00'}</div>
       </header>
 
-      <Progress value={progress} className="h-2 rounded-full m-4" />
+      {/* Custom div-based progress bar to avoid SVG issues */}
+      <div className="w-full bg-muted h-2 rounded-full m-4">
+        <div className="bg-primary h-full rounded-full" style={{ width: `${progress}%` }} />
+      </div>
       <main className="flex-1 p-4 overflow-auto">
         <ErrorBoundary>
           <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin m-auto" />}>
