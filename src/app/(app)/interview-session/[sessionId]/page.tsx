@@ -9,8 +9,6 @@ import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-// Removed Progress import to avoid SVG path parsing errors
-// import { Progress } from '@/components/ui/progress';
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 
 // Error boundary for UI errors
@@ -36,7 +34,6 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 const RealtimeInterviewUI = dynamic(
   async () => {
     const mod = await import('@/components/interview/realtime-interview-ui');
-    // support both default and named export
     return mod.default ?? mod.RealtimeInterviewUI;
   },
   { ssr: false, suspense: true }
@@ -45,10 +42,10 @@ const RealtimeInterviewUI = dynamic(
 // Mock session data (replace in production)
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
   default_live_interview: {
-    title: 'Live Coding Interview',
-    interviewerName: 'Jane Doe',
+    title: 'Live Interview Session',
+    interviewerName: 'Interviewer Name',
     startTimestamp: Date.now(),
-    durationMinutes: 60,
+    durationMinutes: 0,
     questions: [],
   },
 };
@@ -69,14 +66,13 @@ export default function LiveInterviewPage() {
   const [micState, setMicState] = useState<PermissionState>('prompt');
   const [secure, setSecure] = useState<boolean>(true);
 
+  // Interview navigation
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Derived values
   const questions = sessionData?.questions || [];
   const total = questions.length;
   const progress = useMemo(() => (total > 0 ? ((currentIndex + 1) / total) * 100 : 0), [currentIndex, total]);
-  const elapsedMin = sessionData ? Math.floor((Date.now() - sessionData.startTimestamp) / 60000) : 0;
-  const timeLeft = sessionData ? sessionData.durationMinutes - elapsedMin : 0;
 
   const fetchSession = useCallback(() => {
     setLoading(true);
@@ -126,6 +122,7 @@ export default function LiveInterviewPage() {
     }
   };
 
+  // Early returns & rendering
   if (loading) return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
   if (error || !sessionData) return <Alert variant="destructive"><AlertCircle />{error || 'Unknown error'}</Alert>;
   if (!secure) return <Alert variant="destructive"><AlertCircle />App requires HTTPS to access camera/mic.</Alert>;
@@ -139,7 +136,7 @@ export default function LiveInterviewPage() {
   if (!mediaStream) {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4">
-        <p className="text-lg">Enable camera & microphone to proceed.</p>
+        <p className="text-lg">Enable camera & microphone to join the live interview.</p>
         {permissionError && <Alert variant="destructive"><AlertCircle /> {permissionError}</Alert>}
         <Button onClick={startMedia}>Enable Camera & Mic</Button>
       </div>
@@ -153,13 +150,14 @@ export default function LiveInterviewPage() {
           <h1 className="text-2xl font-bold">{sessionData.title}</h1>
           <p className="text-sm text-muted-foreground">Interviewer: {sessionData.interviewerName}</p>
         </div>
-        <div className="text-sm">Time left: {timeLeft > 0 ? `${timeLeft} min` : '00:00'}</div>
+        {/* No timer: live session handled by recruiter */}
       </header>
 
-      {/* Custom div-based progress bar to avoid SVG issues */}
+      {/* Progress bar */}
       <div className="w-full bg-muted h-2 rounded-full m-4">
         <div className="bg-primary h-full rounded-full" style={{ width: `${progress}%` }} />
       </div>
+
       <main className="flex-1 p-4 overflow-auto">
         <ErrorBoundary>
           <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin m-auto" />}>
@@ -177,7 +175,7 @@ export default function LiveInterviewPage() {
           onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
           disabled={currentIndex === 0}
           variant="outline"
-        >Prev</Button>
+        >Previous</Button>
         <span className="text-sm">{currentIndex + 1} / {total}</span>
         <Button
           onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}
