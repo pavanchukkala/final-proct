@@ -9,39 +9,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Mock Live Interview Data - In a real app, this would be fetched from a backend
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
-  '1': { // Google Interview from candidate dashboard (ID '1')
+  '1': {
     id: '1',
     title: 'Google Frontend Engineer – Live Interview',
     interviewerName: 'Dr. Emily Carter',
     candidateName: 'Alex Johnson (You)',
     questions: [
-      { 
-        id: 'live_q1_1', 
-        text: 'Welcome! Tell me about yourself and your journey into frontend development.', 
-        type: 'Discussion', 
-        prompt: 'Focus on key experiences and motivations.'
-      },
-      { 
-        id: 'live_q1_2', 
-        text: 'Can you explain the concept of the Virtual DOM in React and its benefits?', 
-        type: 'Discussion',
-      },
-      { 
-        id: 'live_q1_3', 
-        text: 'Let\'s do a small coding exercise. Please write a JavaScript function to debounce another function. You can use the shared code editor.', 
-        type: 'Coding',
-        language: 'javascript',
-        prompt: 'Consider edge cases and explain your approach as you code.'
-      },
-      {
-        id: 'live_q1_4',
-        text: 'Describe a challenging technical problem you faced on a project and how you solved it.',
-        type: 'Discussion',
-      }
+      { id: 'live_q1_1', text: 'Welcome! Tell me about yourself and your journey into frontend development.', type: 'Discussion', prompt: 'Focus on key experiences and motivations.' },
+      { id: 'live_q1_2', text: 'Can you explain the concept of the Virtual DOM in React and its benefits?', type: 'Discussion' },
+      { id: 'live_q1_3', text: 'Let\'s do a small coding exercise. Please write a JavaScript function to debounce another function. You can use the shared code editor.', type: 'Coding', language: 'javascript', prompt: 'Consider edge cases and explain your approach as you code.' },
+      { id: 'live_q1_4', text: 'Describe a challenging technical problem you faced on a project and how you solved it.', type: 'Discussion' }
     ],
     durationMinutes: 45,
   },
-   '4': { // Netflix UX Designer Interview (ID '4')
+  '4': {
     id: '4',
     title: 'Netflix UX Designer – Live Portfolio Review',
     interviewerName: 'Sarah Chen',
@@ -49,11 +30,10 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     questions: [
       { id: 'live_q4_1', text: 'Thanks for joining! Could you start by walking us through one of your key portfolio pieces that you are most proud of?', type: 'Discussion', prompt: 'Feel free to share your screen if needed to show your work.' },
       { id: 'live_q4_2', text: 'How do you typically incorporate user feedback into your design iterations?', type: 'Discussion' },
-      { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion' },
+      { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion' }
     ],
     durationMinutes: 30,
   },
-  // Fallback live interview session
   'default_live_interview': {
     id: 'default_live_interview',
     title: 'Standard Live Technical Screen',
@@ -62,7 +42,7 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     questions: [
       { id: 'dli_q1', text: 'What are your primary strengths as they relate to this role?', type: 'Discussion' },
       { id: 'dli_q2', text: 'Please write a simple function to reverse a string in the shared editor.', type: 'Coding', language: 'python' },
-      { id: 'dli_q3', text: 'Do you have any questions for me about the role or the company?', type: 'Discussion' },
+      { id: 'dli_q3', text: 'Do you have any questions for me about the role or the company?', type: 'Discussion' }
     ],
     durationMinutes: 20,
   }
@@ -88,7 +68,7 @@ export default function LiveInterviewPage() {
         setInterviewSessionData(null);
       }
       setLoading(false);
-    }, 700); // Slightly longer to simulate data fetch
+    }, 700);
   }, [sessionId]);
 
   if (loading) {
@@ -121,8 +101,11 @@ export default function LiveInterviewPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <RealtimeInterviewUI interviewSession={interviewSessionData} />
+    <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Ensure inner UI can scroll on narrow screens */}
+      <div className="w-full overflow-x-auto">
+        <RealtimeInterviewUI interviewSession={interviewSessionData} />
+      </div>
     </div>
   );
 }
