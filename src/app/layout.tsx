@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </nav>
 
         {/* MAIN CONTENT: slightly inset at 99% width */}
-        <main className="flex-grow w-[99%] mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+        <main className="flex-grow w-[97.5%] mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
           {children}
         </main>
 
