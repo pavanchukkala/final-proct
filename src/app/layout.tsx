@@ -19,10 +19,21 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
-        {/* MAIN CONTENT: slightly inset at 99% width */}
-        <main className="flex-grow w-[97.5%] mx-auto">
-          {children}
-        </main>
+        {/* NAVBAR */}
+        <nav className="bg-white shadow-md w-full">
+          <div className="flex items-center justify-between h-16 px-6">
+            <div className="flex items-center space-x-6 text-sm">
+              <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                Secure Exam Mode
+              </span>
+            </div>
+          </div>
+        </nav>
+
+       <main className="flex-grow w-[99%] sm:w-[98%] md:w-[96%] mx-auto">
+  {children}
+</main>
+
 
         {/* FOOTER */}
         <footer className="bg-white shadow-inner w-full">
