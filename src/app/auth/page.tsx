@@ -14,9 +14,6 @@ export default function AuthPage() {
   return (
     <AuthProvider>
       <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 animated-gradient-background">
-        <div className="absolute top-6 left-6">
-          <AppLogo size="lg" />
-        </div>
         <div className="w-full max-w-5xl space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-10 items-start">
           <Link href="/candidate/dashboard">
             <AuthPanel
