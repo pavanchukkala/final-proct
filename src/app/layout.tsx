@@ -1,7 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { AppLogo } from '@/components/shared/app-logo';
 import { ShieldCheck, UserCircle } from 'lucide-react';
 
@@ -10,12 +9,9 @@ export default function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const pathname = usePathname();
-  const showLogo = !pathname.startsWith('/auth');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -27,15 +23,15 @@ export default function RootLayout({
   }, []);
 
   const handleLogout = () => {
-    // TODO: Implement your logout logic here (e.g. signOut())
     console.log('User logged out');
+    // Implement actual logout logic here
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-sm">
         <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          {showLogo && <AppLogo size="md" />}
+          <AppLogo size="md" />
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-primary">
@@ -43,17 +39,17 @@ export default function RootLayout({
               <span>Secure Exam Mode</span>
             </div>
 
-            {/* Profile Icon + Dropdown */}
+            {/* Profile Icon */}
             <div className="relative" ref={dropdownRef}>
               <UserCircle
                 className="h-7 w-7 text-primary cursor-pointer hover:text-accent transition"
-                onClick={() => setDropdownOpen(prev => !prev)}
+                onClick={() => setDropdownOpen((prev) => !prev)}
               />
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-36 bg-white border rounded-lg shadow-lg z-50 text-sm">
+                <div className="absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white border z-50">
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 transition"
+                    className="block w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
                   >
                     Logout
                   </button>
