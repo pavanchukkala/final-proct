@@ -1,32 +1,22 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { ReactNode, useRef, useEffect, useState } from 'react';
 import { AppLogo } from '@/components/shared/app-logo';
 import { ShieldCheck, UserCircle } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
 
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+export default function RootLayout({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+        setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  const handleLogout = () => {
-    // TODO: Hook up actual logout
-    console.log('Logout clicked');
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -40,17 +30,17 @@ export default function RootLayout({
               <span>Secure Exam Mode</span>
             </div>
 
-            {/* Profile dropdown */}
+            {/* Profile Icon */}
             <div className="relative" ref={dropdownRef}>
               <UserCircle
                 className="h-7 w-7 cursor-pointer text-primary hover:text-accent transition-colors"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => setOpen(!open)}
               />
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-36 bg-card border border-border rounded-md shadow-lg z-50">
+              {open && (
+                <div className="absolute right-0 mt-2 w-32 bg-card border border-border rounded-md shadow-md z-50">
                   <button
-                    className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
-                    onClick={handleLogout}
+                    onClick={() => console.log('Logout')}
+                    className="block w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                   >
                     Logout
                   </button>
