@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
         {/* MAIN CONTENT: slightly inset at 99% width */}
-        <main className="flex-grow w-[99%] mx-auto">
+        <main className="flex-grow w-[97.5%] mx-auto">
           {children}
         </main>
 
