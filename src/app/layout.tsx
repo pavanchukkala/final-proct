@@ -1,33 +1,71 @@
 // src/app/layout.tsx
-import './globals.css';
-import type { ReactNode } from 'react';
-import { AppLogo } from '@/components/shared/app-logo';
-import { ShieldCheck } from 'lucide-react';
+import { ReactNode } from "react";
+import Link from "next/link";
+import "@/styles/globals.css"; // adjust if your global CSS import differs
 
-export default function ExamLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export const metadata = {
+  title: "Proctoring System",
+  description: "Secure exam & interview platform",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-sm">
-        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <AppLogo size="md" />
-          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-            <ShieldCheck className="h-5 w-5" />
-            <span>Secure Exam Mode</span>
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        />
+        {/* add other global meta/titles here */}
+      </head>
+      <body className="min-h-screen flex flex-col bg-gray-50">
+        {/* NAVBAR */}
+        <nav className="bg-white shadow-md">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-16 flex items-center justify-between">
+              <Link href="/" className="flex items-center space-x-2">
+                <span className="text-2xl font-bold">Proctoring System</span>
+              </Link>
+              <div className="flex items-center space-x-4 text-sm">
+                <Link href="/auth" className="hover:underline">
+                  Auth
+                </Link>
+                <Link
+                  href="/candidate/dashboard"
+                  className="hover:underline"
+                >
+                  Candidate
+                </Link>
+                <Link
+                  href="/recruiter/dashboard"
+                  className="hover:underline"
+                >
+                  Recruiter
+                </Link>
+                {/* Mode pill can stay here or you can render per-page */}
+                <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                  Secure Exam Mode
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
-      <main className="flex-1 container py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
-        {children}
-      </main>
-      <footer className="py-4 text-center border-t bg-card/95">
-        <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Proctoring System. Best of luck!
-        </p>
-      </footer>
-    </div>
+        </nav>
+
+        {/* MAIN CONTENT: centered up to max‐width */}
+        <main className="flex-grow flex justify-center">
+          <div className="w-full max-w-7xl px-4 py-6">
+            {children}
+          </div>
+        </main>
+
+        {/* FOOTER (optional) */}
+        <footer className="bg-white shadow-inner">
+          <div className="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-gray-500">
+            © {new Date().getFullYear()} Proctoring System. All rights reserved.
+          </div>
+        </footer>
+      </body>
+    </html>
   );
 }
