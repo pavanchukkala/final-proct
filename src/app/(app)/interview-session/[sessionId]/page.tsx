@@ -4,17 +4,16 @@ import { RealtimeInterviewUI } from '@/components/interview/realtime-interview-u
 import type { LiveInterviewSessionData, TestQuestion } from '@/types';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 
 // Mock Live Interview Data - In a real app, this would be fetched from a backend
 const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
-  '1': { // Corresponds to Google Interview from candidate dashboard (ID '1')
+  '1': { // Google Interview from candidate dashboard (ID '1')
     id: '1',
     title: 'Google Frontend Engineer – Live Interview',
     interviewerName: 'Dr. Emily Carter',
-    candidateName: 'Alex Johnson (You)', // Assuming candidate is logged in
+    candidateName: 'Alex Johnson (You)',
     questions: [
       { 
         id: 'live_q1_1', 
@@ -42,15 +41,15 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     ],
     durationMinutes: 45,
   },
-   '4': { // Corresponds to Netflix UX Designer Interview from candidate dashboard (ID '4')
+   '4': { // Netflix UX Designer Interview (ID '4')
     id: '4',
     title: 'Netflix UX Designer – Live Portfolio Review',
     interviewerName: 'Sarah Chen',
     candidateName: 'Jamie Lee (You)',
     questions: [
-        { id: 'live_q4_1', text: 'Thanks for joining! Could you start by walking us through one of your key portfolio pieces that you are most proud of?', type: 'Discussion', prompt: 'Feel free to share your screen if needed to show your work.' },
-        { id: 'live_q4_2', text: 'How do you typically incorporate user feedback into your design iterations?', type: 'Discussion' },
-        { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion'},
+      { id: 'live_q4_1', text: 'Thanks for joining! Could you start by walking us through one of your key portfolio pieces that you are most proud of?', type: 'Discussion', prompt: 'Feel free to share your screen if needed to show your work.' },
+      { id: 'live_q4_2', text: 'How do you typically incorporate user feedback into your design iterations?', type: 'Discussion' },
+      { id: 'live_q4_3', text: 'What design tools are you most proficient with, and why do you prefer them?', type: 'Discussion' },
     ],
     durationMinutes: 30,
   },
@@ -68,7 +67,6 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
     durationMinutes: 20,
   }
 };
-
 
 export default function LiveInterviewPage() {
   const params = useParams();
@@ -95,26 +93,36 @@ export default function LiveInterviewPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8 bg-gray-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Preparing your live interview session...</p>
+        <p className="mt-4 text-center text-base sm:text-lg text-muted-foreground">
+          Preparing your live interview session...
+        </p>
       </div>
     );
   }
 
   if (error || !interviewSessionData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
-         <Alert variant="destructive" className="max-w-lg">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error Loading Interview</AlertTitle>
-            <AlertDescription>
-              {error || "Could not load the interview session data. Please try again later or contact support."}
-            </AlertDescription>
-          </Alert>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-red-50">
+        <Alert variant="destructive" className="max-w-md w-full">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600" />
+            <div className="ml-3">
+              <AlertTitle className="text-red-800 text-lg">Error Loading Interview</AlertTitle>
+              <AlertDescription className="text-red-700">
+                {error || "Could not load the interview session data. Please try again later or contact support."}
+              </AlertDescription>
+            </div>
+          </div>
+        </Alert>
       </div>
     );
   }
 
-  return <RealtimeInterviewUI interviewSession={interviewSessionData} />;
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <RealtimeInterviewUI interviewSession={interviewSessionData} />
+    </div>
+  );
 }
