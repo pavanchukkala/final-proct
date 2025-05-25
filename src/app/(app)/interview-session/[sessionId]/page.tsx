@@ -31,9 +31,13 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// Lazy-load the Realtime UI
+// Dynamically load the RealtimeInterviewUI, selecting the correct export
 const RealtimeInterviewUI = dynamic(
-  () => import('@/components/interview/realtime-interview-ui'),
+  async () => {
+    const mod = await import('@/components/interview/realtime-interview-ui');
+    // support both default and named export
+    return mod.default ?? mod.RealtimeInterviewUI;
+  },
   { ssr: false, suspense: true }
 );
 
@@ -49,36 +53,30 @@ const mockLiveInterviewSessions: Record<string, LiveInterviewSessionData> = {
 };
 
 export default function LiveInterviewPage() {
-  // URL params
   const { sessionId: sid } = useParams();
   const sessionId = typeof sid === 'string' ? sid : 'default_live_interview';
 
-  // Refs
   const isMounted = useRef(true);
-
-  // Session state
   const [sessionData, setSessionData] = useState<LiveInterviewSessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Media & permissions
+  // Media & permission states
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const [cameraState, setCameraState] = useState<PermissionState>('prompt');
   const [micState, setMicState] = useState<PermissionState>('prompt');
   const [secure, setSecure] = useState<boolean>(true);
 
-  // Interview navigation
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Derived values (must be after state declarations)
+  // Derived values
   const questions = sessionData?.questions || [];
   const total = questions.length;
-  const progress = useMemo(() => total > 0 ? ((currentIndex + 1) / total) * 100 : 0, [currentIndex, total]);
+  const progress = useMemo(() => (total > 0 ? ((currentIndex + 1) / total) * 100 : 0), [currentIndex, total]);
   const elapsedMin = sessionData ? Math.floor((Date.now() - sessionData.startTimestamp) / 60000) : 0;
   const timeLeft = sessionData ? sessionData.durationMinutes - elapsedMin : 0;
 
-  // Fetch mock session
   const fetchSession = useCallback(() => {
     setLoading(true);
     setError(null);
@@ -96,7 +94,6 @@ export default function LiveInterviewPage() {
     return () => { isMounted.current = false; };
   }, [fetchSession]);
 
-  // Check secure context & permission initial states
   useEffect(() => {
     setSecure(window.isSecureContext);
     navigator.permissions.query({ name: 'camera' }).then(res => {
@@ -109,7 +106,6 @@ export default function LiveInterviewPage() {
     });
   }, []);
 
-  // Handler to start media
   const startMedia = async () => {
     if (cameraState === 'denied' || micState === 'denied') {
       setPermissionError('Permissions denied. Re-enable camera & mic in browser settings.');
@@ -121,25 +117,17 @@ export default function LiveInterviewPage() {
       setMediaStream(stream);
     } catch (err: any) {
       console.error('getUserMedia error:', err);
-      setPermissionError(err.name === 'NotAllowedError'
-        ? 'Access denied. Enable camera & microphone in browser settings.'
-        : 'Error accessing camera/microphone.');
+      setPermissionError(
+        err.name === 'NotAllowedError'
+          ? 'Access denied. Enable camera & microphone in browser settings.'
+          : 'Error accessing camera/microphone.'
+      );
     }
   };
 
-  // Early returns & rendering
-  if (loading) {
-    return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
-  }
-
-  if (error || !sessionData) {
-    return <Alert variant="destructive"><AlertCircle />{error || 'Unknown error'}</Alert>;
-  }
-
-  if (!secure) {
-    return <Alert variant="destructive"><AlertCircle />App requires HTTPS to access camera/mic.</Alert>;
-  }
-
+  if (loading) return <Loader2 className="h-16 w-16 animate-spin m-auto mt-20" />;
+  if (error || !sessionData) return <Alert variant="destructive"><AlertCircle />{error || 'Unknown error'}</Alert>;
+  if (!secure) return <Alert variant="destructive"><AlertCircle />App requires HTTPS to access camera/mic.</Alert>;
   if (cameraState === 'denied' || micState === 'denied') {
     return (
       <div className="p-4">
@@ -147,7 +135,6 @@ export default function LiveInterviewPage() {
       </div>
     );
   }
-
   if (!mediaStream) {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4">
