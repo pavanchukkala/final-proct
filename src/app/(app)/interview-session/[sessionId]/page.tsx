@@ -32,10 +32,8 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 // Dynamic real-time interview logic (WebRTC signaling, proctoring)
-const RealtimeInterviewUI = dynamic(
-  () => import('@/components/interview/realtime-interview-ui').then(mod => mod.default),
-  { ssr: false, suspense: true }
-);
+// Statically import RealtimeInterviewUI to avoid undefined dynamic import issues
+import RealtimeInterviewUI from '@/components/interview/realtime-interview-ui';
 
 // Simple code editor fallback
 const CodeEditor: React.FC<{value: string; onChange: (v: string) => void;}> = ({ value, onChange }) => (
